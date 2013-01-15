@@ -3609,7 +3609,7 @@ ACTION(
 		Blit(src,dest,rdPtr);
 		TargetImg->ReleaseAlphaSurface(dest);
 		Image(target)->ReleaseAlphaSurface(src);
-		if Current(rdPtr->targetId)
+		if Current(target)
 			ImageChanged();
 		
 	}
@@ -4184,7 +4184,11 @@ ACTION(
 	float p1 = *(float*) &p1temp;
 	int p2 = Param(TYPE_INT) == 1;
 	while(p1 < 0) p1 += 360;
+#ifndef HWABETA
 	rdPtr->rc.rcAngle = (int)p1 % 360;
+#else
+	rdPtr->rc.rcAngle = fmod(p1, 360);
+#endif
 	rdPtr->rs.rsFlags = (rdPtr->rs.rsFlags & ~RSFLAG_ROTATE_ANTIA) | (p2 << 4);
 	
 	UpdateHotspot(rdPtr);
@@ -5602,4 +5606,3 @@ EXPRESSION(
 	rotatedY /= rdPtr->rc.rcScaleY;
 	return rotatedY;
 }
-
