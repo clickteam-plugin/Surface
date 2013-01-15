@@ -107,7 +107,7 @@ __inline int round(float fl)
 {
 	if(fl-(int)fl>=0.5)
 		return ceil(fl);
-	return fl;
+		return fl;
 }
 
 inline int swap(int color)

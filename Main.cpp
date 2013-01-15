@@ -3609,7 +3609,7 @@ ACTION(
 		Blit(src,dest,rdPtr);
 		TargetImg->ReleaseAlphaSurface(dest);
 		Image(target)->ReleaseAlphaSurface(src);
-		if Current(target)
+		if Current(rdPtr->targetId)
 			ImageChanged();
 		
 	}
@@ -4184,11 +4184,7 @@ ACTION(
 	float p1 = *(float*) &p1temp;
 	int p2 = Param(TYPE_INT) == 1;
 	while(p1 < 0) p1 += 360;
-#ifndef HWABETA
 	rdPtr->rc.rcAngle = (int)p1 % 360;
-#else
-	rdPtr->rc.rcAngle = fmod(p1, 360);
-#endif
 	rdPtr->rs.rsFlags = (rdPtr->rs.rsFlags & ~RSFLAG_ROTATE_ANTIA) | (p2 << 4);
 	
 	UpdateHotspot(rdPtr);
@@ -4222,6 +4218,368 @@ ACTION(
 
 	return 0;
 }
+
+//ACTION(
+//	/* ID */			154,
+//	/* Name */			"Blur image with level %0",
+//	/* Flags */			0,
+//	/* Params */		(1,PARAM_NUMBER,"Level")
+//) {
+//	TargetExists();
+//	int width = TargetImg->GetWidth();
+//	int height = TargetImg->GetHeight();
+//
+//	//Color channel
+//	BYTE* buff;
+//	buff = TargetImg->LockBuffer();
+//	if(!buff) return 0;
+//
+//	int pitch = TargetImg->GetPitch();
+//	if(pitch < 0)
+//	{
+//		pitch *= -1;
+//		buff -= pitch*(height-1);
+//	}
+//	int size = pitch*height;
+//	int byte = TargetImg->GetDepth()>>3;
+//
+//	BYTE* end = buff+size;
+//
+//	for(BYTE* y=buff; y<end ;y+=pitch)
+//	{
+//		BYTE* nextline = y+pitch;
+//		for(BYTE* x=y; x<nextline; x+=byte)
+//		{
+//			*(int*)x ^= 0xffffff;
+//		}
+//	}
+//
+//	TargetImg->UnlockBuffer(buff);
+//
+//	if Current(rdPtr->targetId)
+//		ImageChanged();
+//	
+//	return 0;
+//}
+
+//ACTION(
+//	/* ID */			153,
+//	/* Name */			"Loop through image with callback %1 and flags %0 and condition %2",
+//	/* Flags */			0,
+//	/* Params */		(3,PARAM_NUMBER,"Flags, add together (1: Get color, 2: Set color, 4: Store position, 8: Get alpha, 16: Set alpha)",PARAM_STRING,"Callback",PARAM_STRING,PARAM_CONDITION)
+//) {
+//	TargetExists();
+//
+//	param1 = GetInt();
+//	rdPtr->callback = GetStr();
+//
+//	//Flags
+//	bool doRead = param1&1;
+//	bool doWrite = param1&2;
+//	bool doXY = param1&4;
+//	bool doReadA = param1&8;
+//	bool doWriteA = param1&16;
+//
+//	ColorCond conds[10] = {{0,{0,0},0}};
+//	ParseCondition(rdPtr,GetStr(),&conds[0],10);
+//
+//	int width = TargetImg->GetWidth();
+//	int height = TargetImg->GetHeight();
+//
+//	//Get GenerateEvent lookup
+//	long ( WINAPI * routine)(headerObject*, WPARAM, LPARAM);
+//	routine = ((LPRH)rdPtr->rHo.hoAdRunHeader)->rh4.rh4KpxFunctions[RFUNCTION_GENERATEEVENT].routine;
+//
+//	//Color channel
+//	BYTE* buff;
+//	buff = TargetImg->LockBuffer();
+//	if(!buff) return 0;
+//
+//	int pitch = TargetImg->GetPitch();
+//	if(pitch < 0)
+//	{
+//		pitch *= -1;
+//		buff -= pitch*(height-1);
+//	}
+//	int size = pitch*height;
+//	int byte = TargetImg->GetDepth()>>3;
+//
+//	//Pointer to source variable
+//	BYTE* colSrc = (BYTE*)&rdPtr->colSrc;
+//	BYTE* dest = (BYTE*)&rdPtr->colNew;
+//
+//	BYTE* end = buff+size;
+//
+//	//Get the alpha channel
+//	cSurface* alphaSurf = 0;
+//	if((doReadA || doWriteA) && TargetImg->HasAlpha())
+//		alphaSurf = TargetImg->GetAlphaSurface();
+//	if(!alphaSurf)
+//		doWriteA = doReadA = false;
+//
+//	//For getting the pixel position
+//	rdPtr->callX = 0;
+//	rdPtr->callY = height-1;
+//
+//	for(BYTE* y=buff; y<end ;y+=pitch)
+//	{
+//		BYTE* nextline = y+pitch;
+//		for(BYTE* x=y; x<nextline; x+=byte)
+//		{
+//			//Pre-load alpha so we can pass it to the condition
+//			int alpha = 0;
+//			if(doReadA)
+//				alphaSurf->GetPixelFast8(rdPtr->callX,rdPtr->callY);
+//
+//			if(ConditionMet(rdPtr,&conds[0],10,(alpha<<24)|RGB(x[2],x[1],x[0])))
+//			{
+//				//Get source color
+//				if(doRead)
+//				{
+//					colSrc[0] = x[2];
+//					colSrc[1] = x[1];
+//					colSrc[2] = x[0];
+//					rdPtr->colNew = rdPtr->colSrc;
+//				}
+//				//Get source alpha
+//				if(doReadA)
+//				{
+//					rdPtr->colAlphaSrc = alpha;
+//				}
+//				//Callback
+//				rdPtr->colRet = false;
+//				rdPtr->colAlphaRet = false;
+//				routine((LPHO)rdPtr,8,0);
+//				//Write new color
+//				if(doWrite&&rdPtr->colRet)
+//				{
+//					x[0] = dest[2];
+//					x[1] = dest[1];
+//					x[2] = dest[0];
+//				}
+//				//Write new alpha
+//				if(doWriteA&&rdPtr->colAlphaRet)
+//				{
+//					alphaSurf->SetPixelFast8(rdPtr->callX,rdPtr->callY,rdPtr->colAlphaNew);
+//				}
+//			}
+//
+//			//Update position
+//			if(doXY)
+//				++rdPtr->callX;
+//		}
+//		//Update position
+//		if(doXY)
+//		{
+//			rdPtr->callX = 0;
+//			--rdPtr->callY;
+//		}
+//	}
+//
+//	//Release the alpha channel
+//	if(alphaSurf)
+//		TargetImg->ReleaseAlphaSurface(alphaSurf);
+//
+//	TargetImg->UnlockBuffer(buff);
+//
+//	if Current(rdPtr->targetId)
+//		ImageChanged();
+//		
+//	return 0;
+//}
+//ACTION(
+//	/* ID */			154,
+//	/* Name */			"Perform %0 with %1 for channels %2 with condition %3",
+//	/* Flags */			0,
+//	/* Params */		(4,PARAM_STRING,PARAM_OPERATOR,PARAM_NUMBER,"Operand",PARAM_STRING,"Channels, add together (r, g, b, a)",PARAM_STRING,PARAM_CONDITION)
+//) {
+//	TargetExists();
+//	char* op = GetStr();
+//	float val; LoadFloat(val);
+//	char* ch = GetStr();
+//	char* cond = GetStr();
+//	bool dor = strchr(ch,'r');
+//	bool dog = strchr(ch,'g');
+//	bool dob = strchr(ch,'b');
+//	bool doa = strchr(ch,'a');
+//	int width = TargetImg->GetWidth();
+//	int height = TargetImg->GetHeight();
+//	bool alpha = TargetImg->HasAlpha();
+//
+//	ColorCond conds[10] = {{0,{0,0},0}};
+//	ParseCondition(rdPtr,cond,&conds[0],10);
+//
+//	//Prevent division by zero
+//	if((*op=='/'||*op=='%')&&!val)
+//		val = 0.001f;
+//
+//	//Color channel
+//	BYTE* buff;
+//	buff = TargetImg->LockBuffer();
+//	if(!buff) return 0;
+//
+//	int pitch = TargetImg->GetPitch();
+//	if(pitch < 0)
+//	{
+//		pitch *= -1;
+//		buff -= pitch*(height-1);
+//	}
+//	int size = pitch*height;
+//	int byte = TargetImg->GetDepth()>>3;
+//
+//	BYTE* end = buff+size;
+//
+//	//With alpha. Optimization...
+//	if(doa&&alpha)
+//	{
+//		BYTE* alphaBuff = TargetImg->LockAlpha();
+//		int alphaPitch = TargetImg->GetAlphaPitch();
+//		BYTE* alphaIndex = alphaBuff;
+//		for(BYTE* y=buff; y<end ;y+=pitch)
+//		{
+//			BYTE* nextline = y+pitch;
+//			for(BYTE* x=y; x<nextline; x+=byte)
+//			{
+//				if(ConditionMet(rdPtr,&conds[0],10,(*alphaIndex<<24)|RGB(x[2],x[1],x[0])))
+//				{
+//					if(dor)
+//						Operation(op,x+2,val);
+//					if(dog)
+//						Operation(op,x+1,val);
+//					if(dob)
+//						Operation(op,x+0,val);	
+//					if(doa)
+//						Operation(op,alphaIndex,val);	
+//				}
+//				alphaIndex++;
+//			}
+//		}
+//		TargetImg->UnlockAlpha();
+//	}
+//	//NO Alpha.
+//	else
+//	{
+//		for(BYTE* y=buff; y<end ;y+=pitch)
+//		{
+//			BYTE* nextline = y+pitch;
+//			for(BYTE* x=y; x<nextline; x+=byte)
+//			{
+//				if(ConditionMet(rdPtr,&conds[0],10,RGB(x[2],x[1],x[0])))
+//				{
+//					if(dor)
+//						Operation(op,x+2,val);
+//					if(dog)
+//						Operation(op,x+1,val);
+//					if(dob)
+//						Operation(op,x+0,val);	
+//				}
+//			}
+//		}
+//	}
+//
+//	TargetImg->UnlockBuffer(buff);
+//
+//	if Current(rdPtr->targetId)
+//		ImageChanged();
+//	
+//	return 0;
+//}
+//
+//ACTION(
+//	/* ID */			155,
+//	/* Name */			"Evaluate %0",
+//	/* Flags */			0,
+//	/* Params */		(1,PARAM_STRING,"Expression")
+//) {
+//	TargetExists();
+//	char* exp = GetStr();
+//
+//	int byteCode[128];
+//	parseExpression(exp,&byteCode[0],64);
+//
+//	//r,g,b,a,x,y
+//	int vars[26] = {0};
+//	//Number stack
+//	int stack[16];
+//
+//	int width = TargetImg->GetWidth();
+//	int height = TargetImg->GetHeight();
+//	
+//	//Color channel
+//	BYTE* buff;
+//	buff = TargetImg->LockBuffer();
+//	if(!buff) return 0;
+//
+//	int pitch = TargetImg->GetPitch();
+//	if(pitch < 0)
+//	{
+//		pitch *= -1;
+//		buff -= pitch*(height-1);
+//	}
+//	int size = pitch*height;
+//	int byte = TargetImg->GetDepth()>>3;
+//
+//	BYTE* end = buff+size;
+//	for(BYTE* y=buff; y<end ;y+=pitch)
+//	{
+//		BYTE* nextline = y+pitch;
+//		for(BYTE* x=y; x<nextline; x+=byte)
+//		{
+//			vars['r'-'a'] = x[2];
+//			vars['g'-'a'] = x[1];
+//			vars['b'-'a'] = x[0];
+//			vars['x'-'a'] = (x-y)/byte;
+//			vars['y'-'a'] = (y-buff)/pitch;
+//			evalExpression(&stack[0],16,&byteCode[0],&vars[0]);
+//			x[2] = ((BYTE*)&stack[0])[0];
+//			x[1] = ((BYTE*)&stack[0])[1];
+//			x[0] = ((BYTE*)&stack[0])[2];
+//		}
+//	}
+//
+//	TargetImg->UnlockBuffer(buff);
+//
+//	if Current(rdPtr->targetId)
+//		ImageChanged();
+//	
+//	return 0;
+//}
+
+//ACTION(
+//	/* ID */			138,
+//	/* Name */			"Set blit alpha compose to %1,
+//	/* Flags */			0,
+//	/* Params */		(2,PARAM_STRING,PARAM_OPERATOR_OPTIONAL,PARAM_NUMBER,"Source coefficient")
+//) {
+//	char* op = GetStr();
+//	LoadFloat(rdPtr->bProcOpSrc);
+//
+//	if(rdPtr->bProcOp)
+//		free(rdPtr->bProcOp);
+//	if(op[0])
+//		rdPtr->bProcOp = strdup(op);
+//	else
+//		rdPtr->bProcOp = 0;
+//	return 0;
+//}
+
+//ACTION(
+//	/* ID */			138,
+//	/* Name */			"Set blit operation to %0 with source coefficient %1",
+//	/* Flags */			0,
+//	/* Params */		(2,PARAM_STRING,PARAM_OPERATOR_OPTIONAL,PARAM_NUMBER,"Source coefficient")
+//) {
+//	char* op = GetStr();
+//	LoadFloat(rdPtr->bProcOpSrc);
+//
+//	if(rdPtr->bProcOp)
+//		free(rdPtr->bProcOp);
+//	if(op[0])
+//		rdPtr->bProcOp = strdup(op);
+//	else
+//		rdPtr->bProcOp = 0;
+//	return 0;
+//}
 
 // ============================================================================
 //
@@ -5244,3 +5602,4 @@ EXPRESSION(
 	rotatedY /= rdPtr->rc.rcScaleY;
 	return rotatedY;
 }
+
