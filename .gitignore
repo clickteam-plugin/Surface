@@ -12,7 +12,11 @@
 
 [Dd]ebug*/
 [Rr]elease*/
+<<<<<<< HEAD
+[Rr]un_Only*/
+=======
 Run_Only*/
+>>>>>>> 885839dafb566c575cabbb3e22f9153318569a0b
 
 build/
 
