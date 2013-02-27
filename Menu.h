@@ -268,9 +268,9 @@
 			ITEM(146,"Set all")
 		SUB_END
 		SUB_START("Hot spot")
-			ITEM(148,"Set hot spot")
-			ITEM(150,"Set hot spot (percent)")
-			ITEM(149,"Set flag")
+			ITEM(148,"Set pixels")
+			ITEM(150,"Set percent")
+			//ITEM(149,"Set flag")
 		SUB_END
 		SEPARATOR
 		SUB_START("Angle")
@@ -447,8 +447,8 @@
 			ITEM(49,"Alpha at")
 			SEPARATOR
 			ITEM(64,"Transparent color")
-			ITEM(60,"Hotspot X")
-			ITEM(61,"Hotspot Y")
+			ITEM(60,"Hot spot X")
+			ITEM(61,"Hot spot Y")
 			SEPARATOR
 			ITEM(53,"Binary address")
 		SUB_END

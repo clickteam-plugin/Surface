@@ -77,7 +77,7 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 	rdPtr->bAngleResample = false;
 	rdPtr->bhX = 0;
 	rdPtr->bhY = 0;
-	rdPtr->bhMode = 0;
+	rdPtr->bhMode = 1; // no longer possible to disable
 	//Current & target surfaces
 	rdPtr->targetId = -1;
 	rdPtr->target = 0;

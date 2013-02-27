@@ -93,6 +93,15 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 	int sw = source->GetWidth();
 	int sh = source->GetHeight();
 
+	//Prepare hot spot
+	int hotX = rdPtr->bhX;
+	int hotY = rdPtr->bhY;
+	if(rdPtr->bhMode & 2)
+	{
+		hotX = sw/100.0*hotX;
+		hotY = sh/100.0*hotY;
+	}
+
 	//Use absolute coords
 	if(rdPtr->useAbs)
 	{
@@ -154,15 +163,6 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 		//Nothing to do
 		if(x1 >= x2 || y1 >= y2)
 			return false;
-
-		//Prepare hot spot
-		int hotX = rdPtr->bhX;
-		int hotY = rdPtr->bhY;
-		if(rdPtr->bhMode & 2)
-		{
-			hotX = sw/100.0*hotX;
-			hotY = sh/100.0*hotY;
-		}
 		
 		//Scale if necessary
 		cSurface scaled;
@@ -407,13 +407,6 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 			fakePtr.bhMode = 0;
 			if(rdPtr->bhMode & 1)
 			{
-				int hotX = rdPtr->bhX;
-				int hotY = rdPtr->bhY;
-				if(rdPtr->bhMode & 2)
-				{
-					hotX = sw/100.0f*hotX;
-					hotY = sh/100.0f*hotY;
-				}
 				int dw = sw;
 				int dh = sh;
 				if(rdPtr->bStretch)
@@ -436,8 +429,8 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 	//No rotation, but apply hotspot
 	if(rdPtr->bhMode & 1)
 	{
-		dx -= rdPtr->bhX*dw*1.0f/sw;
-		dy -= rdPtr->bhY*dh*1.0f/sh;
+		dx -= hotX*dw*1.0f/sw;
+		dy -= hotY*dh*1.0f/sh;
 	}
 
 	//Use region if necessary

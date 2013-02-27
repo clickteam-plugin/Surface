@@ -4148,6 +4148,7 @@ ACTION(
 	/* Flags */			0,
 	/* Params */		(1,PARAM_NUMBER,"Enable blit hot spot? (0: No, 1: Yes)")
 ) {
+	/* Deprecated */
 	rdPtr->bhMode |= GetInt()!=0?1:0;
 	return 0;
 }
