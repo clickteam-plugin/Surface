@@ -4144,7 +4144,7 @@ ACTION(
 
 ACTION(
 	/* ID */			149,
-	/* Name */			"Set blit hot spot flag to %0",
+	/* Name */			"(Deprecated) Set blit hot spot flag to %0",
 	/* Flags */			0,
 	/* Params */		(1,PARAM_NUMBER,"Enable blit hot spot? (0: No, 1: Yes)")
 ) {
