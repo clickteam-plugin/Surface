@@ -964,6 +964,18 @@ ACTION(
 		if(!cg) cg = 0.001f;
 		if(!cb) cb = 0.001f;
 	}
+
+	unsigned char rTable[256], gTable[256], bTable[256];
+	for (int i = 0; i < 256; ++i)
+	{
+		rTable[i] = i;
+		gTable[i] = i;
+		bTable[i] = i;
+		Operation(op, &rTable[i], cr);
+		Operation(op, &gTable[i], cg);
+		Operation(op, &bTable[i], cb);
+	}
+
 	int width = TargetImg->GetWidth();
 	int height = TargetImg->GetHeight();
 	
@@ -987,9 +999,9 @@ ACTION(
 		BYTE* nextline = y+pitch;
 		for(BYTE* x=y; x<nextline; x+=byte)
 		{
-			Operation(op,x+2,cr);
-			Operation(op,x+1,cg);
-			Operation(op,x+0,cb);
+			x[2] = rTable[x[2]];
+			x[1] = gTable[x[1]];
+			x[0] = bTable[x[0]];
 		}
 	}
 
@@ -3524,6 +3536,13 @@ ACTION(
 	if((*op=='/'||*op=='%')&&!val)
 		val = 0.001f;
 
+	unsigned char valTable[256];
+	for (int i = 0; i < 256; ++i)
+	{
+		valTable[i] = i;
+		Operation(op,&valTable[i],val);
+	}
+
 	//Color channel
 	BYTE* buff;
 	buff = TargetImg->LockBuffer();
@@ -3544,12 +3563,9 @@ ACTION(
 		BYTE* nextline = y+pitch;
 		for(BYTE* x=y; x<nextline; x+=byte)
 		{
-			if(dor)
-				Operation(op,x+2,val);
-			if(dog)
-				Operation(op,x+1,val);
-			if(dob)
-				Operation(op,x+0,val);
+			if(dor) x[0] = valTable[x[0]];
+			if(dog) x[1] = valTable[x[1]];
+			if(dob) x[2] = valTable[x[2]];
 		}
 	}
 
@@ -3563,7 +3579,7 @@ ACTION(
 		size = width*height;
 
 		for(BYTE* i=buff;i<buff+size;i++)
-					Operation(op,i,val);
+			*i = valTable[*i];
 		
 		TargetImg->UnlockAlpha();
 	}
