@@ -35,9 +35,6 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 	freopen("conout$","w",stderr);
 #endif
 
-	int foo = ((int)&rdPtr->targetValid)-((int)rdPtr);
-	foo = foo;
-
 	LPRH rhPtr = rdPtr->rHo.hoAdRunHeader;
 	mv* mV = rdPtr->rHo.hoAdRunHeader->rh4.rh4Mv;
 
