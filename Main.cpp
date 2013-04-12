@@ -1765,13 +1765,19 @@ ACTION(
 
 	//Use ints for SPEED
 #define ACCURACY 10000
-	int div = (int)fdiv*ACCURACY;
+	int div = (int)(max(1/255.0f, fdiv)*ACCURACY);
 	if(!div) div = ACCURACY;
-	int off = (int)foff*ACCURACY;
-	int filter[3][3];
+	int off = (int)(foff*ACCURACY);
+	int filter[3][3][256];
 	for(int x = 0; x < 3; ++x)
 		for(int y = 0; y < 3; ++y)
-			filter[x][y] = ff[x][y]*ACCURACY;
+			for(int i = 0; i < 256; ++i)
+				filter[x][y][i] = i*ff[x][y]*ACCURACY;
+
+	// Build input->output table
+	BYTE convert[0x1000];
+	for(int i = 0; i < 0x1000; ++i)
+		convert[i] = max(0, min(255, i*ACCURACY/div + off));
 
 	//Dimensions
 	int width = TargetImg->GetWidth(), height = TargetImg->GetHeight();
@@ -1805,13 +1811,14 @@ ACTION(
 	//Loop through all pixels
 	for(int loop = 0; loop < iterations; ++loop)
 	{
-		for(int y =0; y < height; ++y)
+		for(int y = 0; y < height; ++y)
 		{
 			for(int x = 0; x < width; ++x)
 			{
 				nr = 0;
 				ng = 0;
 				nb = 0;
+
 				//Loop through matrix
 				for(int j = 0; j < 3; ++j)
 				{
@@ -1821,20 +1828,20 @@ ACTION(
 						//NOTE: Y upside down in buffer
 						vx = min(max(x+1-i,0),width-1);
 						offset = vy*pitch+vx*byte;
-						nr += src[offset+2]*filter[j][i];
-						ng += src[offset+1]*filter[j][i];
-						nb += src[offset+0]*filter[j][i];
+
+						BYTE* pixel = src + offset;
+						int * result = &filter[j][i][0];
+
+						nr += result[pixel[2]];
+						ng += result[pixel[1]];
+						nb += result[pixel[0]];
 					}
 				}
 
-				nr = (nr*ACCURACY/div)+off; nr = max(0,min(255,nr/ACCURACY)); 
-				ng = (ng*ACCURACY/div)+off; ng = max(0,min(255,ng/ACCURACY));
-				nb = (nb*ACCURACY/div)+off; nb = max(0,min(255,nb/ACCURACY));
-
 				offset = y*pitch+x*byte;
-				buff[offset+2] = nr;
-				buff[offset+1] = ng;
-				buff[offset+0] = nb;
+				buff[offset+2] = convert[int(nr/ACCURACY)];
+				buff[offset+1] = convert[int(ng/ACCURACY)];
+				buff[offset+0] = convert[int(nb/ACCURACY)];
 			}
 		}
 		if(iterations > 1 && loop + 1 < iterations)
