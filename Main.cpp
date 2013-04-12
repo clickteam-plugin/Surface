@@ -1764,25 +1764,29 @@ ACTION(
 	LoadFloat(ff[2][2]);
 
 	//Use ints for SPEED
-#define ACCURACY 10000
-	int div = (int)(max(1/255.0f, fdiv)*ACCURACY);
-	if(!div) div = ACCURACY;
-	int off = (int)(foff*ACCURACY);
+
+#define TOFIX(x) int((x) * 10000)
+#define TOINT(x) int((x) / 10000)
+
+	int div = TOFIX(max(1/255.0f, fdiv));
+	if(!div) div = TOFIX(1);
+	int off = TOFIX(foff);
+
 	int filter[3][3][256];
 	for(int x = 0; x < 3; ++x)
 		for(int y = 0; y < 3; ++y)
 			for(int i = 0; i < 256; ++i)
-				filter[x][y][i] = i*ff[x][y]*ACCURACY;
+				filter[x][y][i] = TOFIX(i*ff[x][y]);
 
 	// Build input->output table
 	BYTE convert[0x1000];
 	for(int i = 0; i < 0x1000; ++i)
-		convert[i] = max(0, min(255, i*ACCURACY/div + off));
+		convert[i] = max(0, min(255, TOFIX(i)/div + off));
 
 	//Dimensions
 	int width = TargetImg->GetWidth(), height = TargetImg->GetHeight();
 	//New RGB
-	float nr,ng,nb;
+	int nr,ng,nb;
 	//Old RGB
 	COLORREF rgb;
 	//New position
@@ -1839,9 +1843,9 @@ ACTION(
 				}
 
 				offset = y*pitch+x*byte;
-				buff[offset+2] = convert[int(nr/ACCURACY)];
-				buff[offset+1] = convert[int(ng/ACCURACY)];
-				buff[offset+0] = convert[int(nb/ACCURACY)];
+				buff[offset+2] = convert[TOINT(nr)];
+				buff[offset+1] = convert[TOINT(ng)];
+				buff[offset+0] = convert[TOINT(nb)];
 			}
 		}
 		if(iterations > 1 && loop + 1 < iterations)
