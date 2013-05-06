@@ -963,8 +963,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs2.lib"
-				OutputFile="c:\mmf2\extensions\surface.mfx"
+				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs2hwa.lib"
+				OutputFile="c:\mmf2\extensions\hwa\surface.mfx"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\lib\"

@@ -1250,8 +1250,11 @@ ACTION(
 	/* ID */			40,
 	/* Name */			"Set blit effect to %0",
 	/* Flags */			0,
-	/* Params */		(1,PARAM_NUMBER,"Blit effect (0: None, 1: Semi-transparency, 2: Invert, 3: XOR, 4: AND, 5: OR, 9: Add, 10: Mono, 11: Sub)")
+	/* Params */		(1,PARAM_NUMBER,"Blit effect (0: None, 1: Semi-transparency, 2: Invert, 3: XOR, 4: AND, 5: OR, 9: Add, 10: Mono, 11: Sub, 12: HWA Tint)")
 ) {
+	if(param1 == 12)
+		param1 = (int)BOP_RGBAFILTER;
+
 	rdPtr->bOp = (BlitOp)param1;
 	return 0;
 }
@@ -3646,7 +3649,7 @@ ACTION(
 	/* ID */			126,
 	/* Name */			"Set blit effect to %0",
 	/* Flags */			0,
-	/* Params */		(1,PARAM_STRING,"Blit effect (Semi-transparency, Invert, XOR, AND, OR, Add, Mono, Sub)")
+	/* Params */		(1,PARAM_STRING,"Blit effect (Semi-transparency, Invert, XOR, AND, OR, Add, Mono, Sub, Tint)")
 ) {
 	char* bmode = GetStr();
 	BlitOp bop = BOP_COPY;
@@ -3658,6 +3661,7 @@ ACTION(
 	else if(!stricmp(bmode,"add")) bop = BOP_ADD;
 	else if(!stricmp(bmode,"mono")) bop = BOP_MONO;
 	else if(!stricmp(bmode,"sub")) bop = BOP_SUB;
+	else if(!stricmp(bmode,"tint")) bop = BOP_RGBAFILTER;
 	rdPtr->bOp = bop;
 	return 0;
 }
@@ -4251,6 +4255,132 @@ ACTION(
 	return 0;
 }
 
+ACTION(
+	/* ID */			154,
+	/* Name */			"Convert to HWA texture",
+	/* Flags */			0,
+	/* Params */		(0)
+) {
+#ifdef HWABETA
+	ImageExists(rdPtr->targetId);
+
+	if(TargetImg->GetType() >= ST_HWA_SCREEN)
+		return 0;
+
+	// convert transp. color to alpha
+	if(!TargetImg->HasAlpha())
+		ActionFunc4(rdPtr, 1, 0);
+
+	cSurface* proto;
+	GetSurfacePrototype(&proto, 0*TargetImg->GetDepth(), ST_HWA_ROUTEXTURE, SD_D3D9);
+
+	// convert
+	cSurface* hwa = new cSurface;
+	hwa->Create(rdPtr->target->GetWidth(), rdPtr->target->GetHeight(), proto);
+	TargetImg->Blit(*hwa);
+	hwa->SetTransparentColor(TargetImg->GetTransparentColor());
+
+	// assign new image
+	delete TargetImg;
+	TargetImg = hwa;
+	Image(rdPtr->targetId) = TargetImg;
+
+	if Current(rdPtr->targetId)
+	{
+		rdPtr->current = rdPtr->target;
+		ImageChanged();
+	}
+#endif
+
+	return 0;
+}
+
+ACTION(
+	/* ID */			155,
+	/* Name */			"Convert to HWA target",
+	/* Flags */			0,
+	/* Params */		(0)
+) {
+#ifdef HWABETA
+	ImageExists(rdPtr->targetId);
+
+	if(TargetImg->GetType() >= ST_HWA_SCREEN)
+		return 0;
+
+	// convert transp. color to alpha
+	if(!TargetImg->HasAlpha())
+		ActionFunc4(rdPtr, 1, 0);
+
+	cSurface* proto;
+	GetSurfacePrototype(&proto, TargetImg->GetDepth(), ST_HWA_RTTEXTURE, SD_D3D9);
+
+	// convert
+	cSurface* hwa = new cSurface;
+	hwa->Create(rdPtr->target->GetWidth(), rdPtr->target->GetHeight(), proto);
+	hwa->CreateAlpha();
+	TargetImg->Blit(*hwa);
+	hwa->SetTransparentColor(TargetImg->GetTransparentColor());
+
+	// assign new image
+	delete TargetImg;
+	TargetImg = hwa;
+	Image(rdPtr->targetId) = TargetImg;
+
+	if Current(rdPtr->targetId)
+	{
+		rdPtr->current = rdPtr->target;
+		ImageChanged();
+	}
+#endif
+
+	return 0;
+}
+
+ACTION(
+	/* ID */			156,
+	/* Name */			"Convert to bitmap",
+	/* Flags */			0,
+	/* Params */		(0)
+) {
+#ifdef HWABETA
+	ImageExists(rdPtr->targetId);
+
+	if(TargetImg->GetType() < ST_HWA_SCREEN)
+		return 0;
+
+	cSurface* proto;
+	GetSurfacePrototype(&proto, TargetImg->GetDepth(), ST_MEMORYWITHDC, SD_DIB);
+
+	// convert
+	cSurface* bmp = new cSurface;
+	bmp->Create(rdPtr->target->GetWidth(), rdPtr->target->GetHeight(), proto);
+	TargetImg->Blit(*bmp, 0, 0, BMODE_OPAQUE, BOP_COPY);
+	bmp->SetTransparentColor(TargetImg->GetTransparentColor());
+
+	// assign new image
+	delete TargetImg;
+	TargetImg = bmp;
+	Image(rdPtr->targetId) = TargetImg;
+
+	if Current(rdPtr->targetId)
+	{
+		rdPtr->current = rdPtr->target;
+		ImageChanged();
+	}
+#endif
+
+	return 0;
+}
+
+ACTION(
+	/* ID */			157,
+	/* Name */			"Set blit tint to (%0, %1)",
+	/* Flags */			0,
+	/* Params */		(2, PARAM_COLOUR, "Color multiplier", PARAM_NUMBER, "Alpha multiplier (0-255)")
+) {
+	rdPtr->bParam = ((param2 & 0xff) << 24) | ((param1 & 0xff0000) >> 16) | (param1 & 0xff00) | ((param1 & 0xff) << 16);
+	return 0;
+}
 // ============================================================================
 //
 // EXPRESSIONS

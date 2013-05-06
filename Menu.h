@@ -281,7 +281,12 @@
 		SUB_START("Effect")
 			ITEM(40,"Set by index")
 			ITEM(126,"Set by name")
-			ITEM(39,"Set semi-transparency")
+			SUB_START("Semi-transparency...")
+				ITEM(39,"Set semi-transparency")
+			SUB_END
+			SUB_START("Tint...")
+				ITEM(157, "Set tint (HWA only)")
+			SUB_END
 			SEPARATOR
 			ITEM(136,"Set callback (overrides effect)")
 		SUB_END
@@ -320,6 +325,10 @@
 		SEPARATOR
 		ITEM(96,"Set clipping rectangle")
 		ITEM(97,"Clear clipping rectangle")
+		SEPARATOR
+		ITEM(156, "Convert to bitmap")
+		ITEM(154, "Convert to HWA texture")
+		ITEM(155, "Convert to HWA target")
 	SUB_END
 	SUB_START("Transform")
 		ITEM(13,"Resize")

@@ -117,6 +117,52 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 		}
 	}
 
+	// stretch flag (used by multiple branches)
+	int strf = 0;
+	//Resampling
+	if(rdPtr->bStretch==2) strf |= STRF_RESAMPLE;
+	else if(rdPtr->bStretch==3) strf |= STRF_RESAMPLE_TRANSP;
+
+
+#ifdef HWABETA
+	/* HWA */
+	if (source->GetType() >= ST_HWA_RTTEXTURE && dest->GetType() >= ST_HWA_SCREEN)
+	{
+		// Use region if necessary
+		if(rdPtr->bsRegion)
+		{
+			sx = max(0,min(sw,sx));
+			sy = max(0,min(sh,sy));
+			sw = max(0,min(rdPtr->bsW,sw));
+			sh = max(0,min(rdPtr->bsH,sh));
+		}
+
+		if(!sw || !sh)
+			return false;
+
+		POINT hotspot = {0, 0};
+
+		if(rdPtr->bhMode)
+		{
+			hotspot.x = hotX;
+			hotspot.y = hotY;
+		}
+		
+		float scaleX = 1;
+		float scaleY = 1;
+
+		if(rdPtr->bStretch)
+		{
+			scaleX = (rdPtr->bdW * 1.0f) / sw;
+			scaleY = (rdPtr->bdH * 1.0f) / sh;
+		}
+
+		float angle = rdPtr->bAngle;
+
+		return source->BlitEx(*dest, dx, dy, scaleX, scaleY, sx, sy, sw, sh, &hotspot, angle, rdPtr->bM, rdPtr->bOp, rdPtr->bParam, strf);
+	}
+#endif
+
 	//Compose alpha
 	if(rdPtr->bAlphaCompose && rdPtr->bM == BMODE_TRANSP)
 	{
@@ -471,10 +517,6 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 	//Stretching
 	else
 	{
-		int strf = 0;
-		//Resampling
-		if(rdPtr->bStretch==2) strf |= STRF_RESAMPLE;
-		else if(rdPtr->bStretch==3) strf |= STRF_RESAMPLE_TRANSP;
 		//Copy alpha
 		if(rdPtr->bFlags & BLTF_COPYALPHA)
 			strf |= STRF_COPYALPHA;
