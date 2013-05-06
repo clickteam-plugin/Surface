@@ -4272,7 +4272,7 @@ ACTION(
 		ActionFunc4(rdPtr, 1, 0);
 
 	cSurface* proto;
-	GetSurfacePrototype(&proto, 0*TargetImg->GetDepth(), ST_HWA_ROUTEXTURE, SD_D3D9);
+	GetSurfacePrototype(&proto, TargetImg->GetDepth(), ST_HWA_ROUTEXTURE, SD_D3D9);
 
 	// convert
 	cSurface* hwa = new cSurface;
