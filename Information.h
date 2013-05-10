@@ -5,7 +5,7 @@
 // Basic object details
 #define	ObjectName			"Surface"
 #define	ObjectAuthor		"Looki"
-#define	ObjectCopyright		"Copyright © 2010 AquadaSoft"
+#define	ObjectCopyright		"Copyright Â© 2013 Looki"
 #define	ObjectComment		"An editable canvas much like Overlay Redux, but with support for multiple images, alpha channels and more. Thanks to Greyhill for the icon."
 #define	ObjectURL			"http://www.aquadasoft.com"
 #define	ObjectHelp			"Help\\Surface.chm"
