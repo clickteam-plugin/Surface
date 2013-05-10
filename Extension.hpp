@@ -56,7 +56,8 @@ public:
 	 * changes, not just when you have a new version
 	 * of your extension with new features.
 	 */
-	static const int Version = 1;
+	static const int Version = 2;
+	static const int Version_rSDK = 1;
 
 	/* OEFLAGS, OEPREFS
 	 * These are settings for your extension

@@ -40,7 +40,7 @@ namespace Prop
 
 PropData Properties[] = //See the MMF2SDK help file for information on PropData_ macros.
 {
-	PropData_StaticString(Prop::Version, (UINT_PTR)"Version #", (UINT_PTR)"This is the current version of the EDIF Template object."),
+	PropData_StaticString(Prop::Version, (UINT_PTR)"Version #", (UINT_PTR)"This is the current version of the Surface object."),
 	//PropData_EditMultiLine(Prop::MyString, (UINT_PTR)"My String", (UINT_PTR)"The contents of my string."),
 	//PropData_EditNumber(Prop::MyInt, (UINT_PTR)"My Integer", (UINT_PTR)"The value of my integer."),
 	PropData_End()
@@ -137,7 +137,7 @@ void *MMF2Func GetPropValue(mv *mV, SerializedED *SED, UINT PropID)
 	{
 	case Prop::Version:
 		{
-			return new CPropDataValue("Default.EDIF.Template.0");
+			return new CPropDataValue("1.6 beta");
 		}
 	//case Prop::MyString:
 	//	{
