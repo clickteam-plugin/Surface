@@ -42,14 +42,14 @@ PropData Properties[] = //See the MMF2SDK help file for information on PropData_
 	PropData_End()
 };
 
-char const *const FontQuality[] =
-{
-	0,
-	"Aliased",
-	"Anti-aliased",
-	"ClearType",
-	0
-};
+//char const *const FontQuality[] =
+//{
+//	0,
+//	"Aliased",
+//	"Anti-aliased",
+//	"ClearType",
+//	0
+//};
 
 PropData FontProps[] =
 {

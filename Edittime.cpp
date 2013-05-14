@@ -370,9 +370,7 @@ void MMF2Func EditorDisplay(mv *mV, OI *oi, LO *lo, SerializedED *SED, RECT *rec
 	//Draw extension icon
 	if((ed.multiImg || !ed.images[0]) && (!ed.loadFirst || !ed.images[0]))
 	{
-		is.Create(4,4,ps);
-		//is.LoadImage(hInstLib, EXO_IMAGE, LI_REMAP);
-		SDK->Icon->Blit(is, rect->left, rect->top, BMODE_TRANSP, BOP_COPY, 0);
+		is.Clone(SDK->Icon);
 		is.SetTransparentColor(0xff00ff);
 		//Also draw surface borders
 		if(ed.loadFirst && !ed.images[0])
