@@ -67,8 +67,8 @@ public:
 	 * more detailed information on the flags you
 	 * can set and what they implicate.
 	 */
-	static const int OEFLAGS = OEFLAG_VALUES|OEFLAG_RUNBEFOREFADEIN|OEFLAG_NEVERKILL;
-	static const int OEPREFS = 0;
+	static const int OEFLAGS = OEFLAG_BACKSAVE|OEFLAG_MOVEMENTS|OEFLAG_VALUES|OEFLAG_SPRITES;
+	static const int OEPREFS = OEPREFS_BACKSAVE|OEPREFS_SCROLLINGINDEPENDANT|OEPREFS_SLEEP|OEPREFS_KILL|OEPREFS_INKEFFECTS|OEPREFS_FINECOLLISIONS;
 
 	/* WindowProcPriority
 	 * If your extension creates a Window
