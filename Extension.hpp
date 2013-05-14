@@ -98,8 +98,8 @@ public:
 	short       currentId
 	,           lastId;
 	//Functions
-	cSurface   *imageAt(int image);
-	int         imageCount();
+	cSurface *(*imageAt)(RD *rd, int image); //external interface
+	int       (*imageCount)(RD *rd);         //external interface
 	bool        CreateFillData(stdtstring name, CFillData *fill, int type, int paran);
 	void        FreeColmask();
 	void        RectUpdate(int x1, int y1, int x2, int y2);
