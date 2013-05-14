@@ -25,7 +25,7 @@ EXPORTS
 	IsTransparent					@21
 	PrepareToWriteObject			@22
 	UpdateFileNames					@23
-;	EnumElts						@24
+	EnumElts						@24
 	Initialize=InitExtension		@25
 	Free=FreeExtension				@26
 ;	ExportTexts						@27
@@ -92,12 +92,12 @@ EXPORTS
 ;	GetRunObjectSurface				@90
 ;	GetRunObjectCollisionMask		@91
 
-;	GetRunObjectFont				@92
-;	SetRunObjectFont				@93
-;	GetRunObjectTextColor			@94
-;	SetRunObjectTextColor			@95
+	GetRunObjectFont				@92
+	SetRunObjectFont				@93
+	GetRunObjectTextColor			@94
+	SetRunObjectTextColor			@95
 
-;	SetEditSize						@99
+	SetEditSize						@99
 	GetProperties					@100
 	ReleaseProperties				@101
 	GetPropValue					@102
