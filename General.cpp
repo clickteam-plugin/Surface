@@ -148,18 +148,27 @@ void MMF2Func UpdateFileNames(mv *mV, LPSTR appName, SerializedED *SED, void (WI
  * You must also uncomment the entry in the Ext.def
  * file if you uncomment this function.
  */
-/*int MMF2Func EnumElts (mv *mV, SerializedED *SED, ENUMELTPROC enumProc, ENUMELTPROC undoProc, LPARAM lp1, LPARAM lp2)
+int MMF2Func EnumElts(mv *mV, SerializedED *SED, ENUMELTPROC enumProc, ENUMELTPROC undoProc, LPARAM lp1, LPARAM lp2)
 {  
 	int error = 0;
 
-	//Replace wImgIdx with the name of the WORD variable you create within the edit structure
+	EditData ed (SED);
   
-	//Enum images  
-	if((error = enumProc(&edPtr->wImgIdx, IMG_TAB, lp1, lp2)) != 0)
+	//Enum images
+	for(unsigned i = 0; i < ed.imageCount; ++i)
 	{
-		//Undo enum images	  
-		undoProc(&edPtr->wImgIdx, IMG_TAB, lp1, lp2);
-	}  
+		if((error = enumProc(&(ed.images[i]), IMG_TAB, lp1, lp2)) != 0)
+		{
+			//Undo enum images
+			for(signed j = i; j >= 0; --j)
+			{
+				undoProc(&(ed.images[j]), IMG_TAB, lp1, lp2);
+			}
+			break;
+		}
+	}
+
+	ed.Serialize(mV, SED);
 
 	return error;
-}*/
+}
