@@ -90,9 +90,94 @@ public:
 	 * store a pointer.
 	 */
 
-	//stdtstring MyString;
-	//int MyInt;
-	//std::vector<float> MyArray;
+	ImageBank  *surf;
+	cSurface   *target;
+	short       targetId;
+	bool        targetValid;
+	cSurface   *current;
+	short       currentId
+	,           lastId;
+	//Functions
+	cSurface   *imageAt(int image);
+	int         imageCount();
+	bool        CreateFillData(stdtstring name, CFillData *fill, int type, int paran);
+	void        FreeColmask();
+	void        RectUpdate(int x1, int y1, int x2, int y2);
+	void        Blit(cSurface *source, cSurface *dest);
+	int         ProcessFillFlags(stdtstring fill, stdtstring out, bool &useFill, bool &useOut, FillGuide *&fillData, FillGuide *&outData);
+	void        UpdateHotspot();
+//	void        ParseCondition(TCHAR const *cond, ColorCond *conds, int n);
+//	bool        ConditionMet(ColorCOnd *conds, int n, COLORREF color);
+	//Display surface for rotations and scaling
+	cSurface   *display;
+	//The default image depth
+	int         depth;
+	//Internal blit
+	BlitMode    bM;
+	BlitOp      bOp;
+	LPARAM      bParam;
+	DWORD       bFlags;
+	int         bdX
+	,           bdY
+	,           bdW
+	,           bdH
+	,           bStretch
+	,           bsX
+	,           bsY
+	,           bsW
+	,           bsH;
+	bool        bsRegion;
+	int         bAngle;
+	bool        bAngleResample;
+	char const *bCallback
+	,          *bProcOp;
+	float       bAlphaCompose;
+	int         bhX
+	,           bhY
+	,           bhMode;
+	//Callback
+	COLORREF    colSrc
+	,           colDest
+	,           colNew;
+	int         colAlphaSrc
+	,           colAlphaDest
+	,           colAlphaNew;
+	bool        colRet
+	,           colAlphaRet;
+	char const *callback;
+	int         callX
+	,           callY;
+	//Data
+	sMask      *collision;
+	PolyPoints *points;
+	FillDB     *fill;
+	//Font
+	HFONT       hFont;
+	DWORD       hFlags;
+	LOGFONT     textFont;
+	//Options
+	bool        useAbs
+	,           keepPoints
+	,           threadedIO
+	,           dispTarget
+	,           selectLast;
+	//Settings of non-existant surfaces
+	COLORREF    transCol;
+	//Buffer lock
+	BYTE       *buffer;
+	cSurface   *buffSurf;
+	int         buffPitch;
+	//Overlay compatibility
+	Overlay    *ovl;
+	//Flood fill
+	int         floodL
+	,           floodR
+	,           floodT
+	,           floodB;
+	//I/O stuff
+	char const *ioFile;
+	DWORD       ioFilter;
+	HANDLE      ioHandle;
 
 
 	/* Add your actions, conditions, and expressions
