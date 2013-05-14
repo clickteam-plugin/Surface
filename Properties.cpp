@@ -19,30 +19,44 @@
 
 #ifndef RUN_ONLY
 
-/* Prop
- * This is the namespace the property identifiers
- * are stored in. It keeps them out of the global
- * namespace and it helps with intellisense.
- */
-namespace Prop
-{
-	/* <enum>
-	 * The property identitifers.
-	 */
-	enum
-	{
-		zNOT_USED = PROPID_EXTITEM_CUSTOM_FIRST,
-		Version,
-		//MyString,
-		//MyInt,
-	};
-}
+#include "PropIDs.hpp"
 
 PropData Properties[] = //See the MMF2SDK help file for information on PropData_ macros.
 {
-	PropData_StaticString(Prop::Version, (UINT_PTR)"Version #", (UINT_PTR)"This is the current version of the Surface object."),
-	//PropData_EditMultiLine(Prop::MyString, (UINT_PTR)"My String", (UINT_PTR)"The contents of my string."),
-	//PropData_EditNumber(Prop::MyInt, (UINT_PTR)"My Integer", (UINT_PTR)"The value of my integer."),
+	PropData_StaticString(Prop::Version,        (UINT_PTR)"Version #",                 (UINT_PTR)"This is the current version of the Surface object."),
+
+	PropData_Group    (Prop::ImageBank,      (UINT_PTR)"Image bank",                (UINT_PTR)""),
+	PropData_ImageList(Prop::Images,         (UINT_PTR)"Images",                    (UINT_PTR)""),
+	PropData_Button   (Prop::Remove,         (UINT_PTR)"",                          (UINT_PTR)"", (UINT_PTR)"Remove"),
+	PropData_CheckBox (Prop::MultiImage,     (UINT_PTR)"Use multiple images",       (UINT_PTR)"Actions to manage multiple images will be provided. Recommended over using multiple Surface objects."),
+	PropData_CheckBox (Prop::LoadFirst,      (UINT_PTR)"Load first image on start", (UINT_PTR)"Loads and displays image 0 if available on start."),
+	PropData_CheckBox (Prop::SelectNew,      (UINT_PTR)"Select new images",         (UINT_PTR)"When an image is added, it is automatically selected as the editing image."),
+	PropData_CheckBox (Prop::DisplayEditing, (UINT_PTR)"Display editing image",     (UINT_PTR)"\"Set current image\" will not be available and the editing image is drawn instead."),
+
+	PropData_Group   (Prop::Settings,   (UINT_PTR)"Settings",                   (UINT_PTR)""),
+	PropData_CheckBox(Prop::AbsCoords,  (UINT_PTR)"Use absolute coordinates",   (UINT_PTR)"Coordinates are not relative to the surface position."),
+	PropData_CheckBox(Prop::KeepPoints, (UINT_PTR)"Keep points after drawing",  (UINT_PTR)"The polygon points will be kept after drawing one."),
+	PropData_CheckBox(Prop::ThreadedIO, (UINT_PTR)"Threaded file input/output", (UINT_PTR)"If checked, the application does not freeze while a file is being loaded or saved."),
+	PropData_CheckBox(Prop::Resampling, (UINT_PTR)"Linear resampling",          (UINT_PTR)"Some actions like \"Resize\" and \"Rotate\" can achieve better quality with this option."),
+
+	PropData_End()
+};
+
+char const *const FontQuality[] =
+{
+	0,
+	"Aliased",
+	"Anti-aliased",
+	"ClearType",
+	0
+};
+
+PropData FontProps[] =
+{
+	PropData_CheckBox(Prop::Multiline,  (UINT_PTR)"Multi-line",       (UINT_PTR)"If checked, line breaks will be rendered, but vertical alignment is not supported."),
+	PropData_CheckBox(Prop::NoClipping, (UINT_PTR)"No text clipping", (UINT_PTR)"If checked, the text won't be clipped if it exceeds the given rectangle."),
+	PropData_CheckBox(Prop::Ellipsis,   (UINT_PTR)"Add ellipsis",     (UINT_PTR)"Truncates any word that does not fit in the rectangle and adds an ellipsis."),
+	PropData_CheckBox(Prop::WordBreak,  (UINT_PTR)"Break words",      (UINT_PTR)"Break words that don't fit in the rectangle."),
 	PropData_End()
 };
 
@@ -61,6 +75,7 @@ BOOL MMF2Func GetProperties(mv *mV, SerializedED *SED, BOOL MasterItem)
 	//EditData ed (SED);
 	//ed.stuff;
 	mvInsertProps(mV, SED, Properties, PROPID_TAB_GENERAL, TRUE);
+	mvInsertProps(mV, SED, FontProps, PROPID_TAB_TEXTOPT, TRUE);
 	//if you changed ed:
 	//ed.Serialize(mV, SED);
 	return TRUE;
@@ -132,21 +147,28 @@ void MMF2Func ReleasePropCreateParam(mv *mV, SerializedED *SED, UINT PropID, LPA
 void *MMF2Func GetPropValue(mv *mV, SerializedED *SED, UINT PropID)
 {
 #ifndef RUN_ONLY
-	//EditData ed (SED);
+	EditData ed (SED);
 	switch(PropID)
 	{
 	case Prop::Version:
 		{
 			return new CPropDataValue("1.6 beta");
 		}
-	//case Prop::MyString:
-	//	{
-	//		return new CPropDataValue(ed.MyString.c_str());
-	//	}
-	//case Prop::MyInt:
-	//	{
-	//		return new CPropDWordValue(ed.MyInt);
-	//	}
+	case Prop::Images:
+		{
+			CPropDataValue *pv = new CPropDataValue((ed.imageCount + 1) * sizeof(WORD), NULL);
+			if(pv->m_pData)
+			{
+				LPWORD pw = LPWORD(pv->m_pData);
+				*pw++ = ed.imageCount;
+				for(WORD w = 0; w < ed.imageCount; ++w)
+				{
+					*pw++ = ed.images[w];
+				}
+				return pv;
+			}
+			pv->Delete();
+		} break;
 	}
 	//if you changed ed:
 	//ed.Serialize(mV, SED);
@@ -163,22 +185,25 @@ void *MMF2Func GetPropValue(mv *mV, SerializedED *SED, UINT PropID)
 void MMF2Func SetPropValue(mv *mV, SerializedED *SED, UINT PropID, CPropValue *PropVal)
 {
 #ifndef RUN_ONLY
-	//EditData ed (SED);
-	//switch(PropID)
-	//{
-	//case Prop::MyString:
-	//	{
-	//		ed.MyString = (LPSTR)((CPropDataValue*)PropVal)->m_pData;
-	//		break;
-	//	}
-	//case Prop::MyInt:
-	//	{
-	//		ed.MyInt = (CPropDWordValue*)PropVal)->m_dwValue;
-	//		break;
-	//	}
-	//}
+	EditData ed (SED);
+	switch(PropID)
+	{
+	case Prop::Images:
+		{
+			CPropDataValue *val = (CPropDataValue *)PropVal;
+			if(val->m_pData)
+			{
+				LPWORD pw = (LPWORD)(val->m_pData);
+				for(WORD w = 0; w < ed.imageCount; ++w)
+				{
+					ed.images[w] = *pw++;
+				}
+			}
+			mvInvalidateObject(mV, SED);
+		} break;
+	}
 	//since you changed ed:
-	//ed.Serialize(mV, SED);
+	ed.Serialize(mV, SED);
 
 	//You may want to have your object redrawn in the
 	//frame editor after the modifications; in this
@@ -197,14 +222,35 @@ void MMF2Func SetPropValue(mv *mV, SerializedED *SED, UINT PropID, CPropValue *P
 BOOL MMF2Func GetPropCheck(mv *mV, SerializedED *SED, UINT PropID)
 {
 #ifndef RUN_ONLY
-	//EditData ed (SED);
-	//switch(PropID)
-	//{
-	//case Prop::MyCheckBoxPropertyOrPropertyThatHasTheCheckboxOptionSet:
-	//	{
-	//		return ed.WhetherOrNotThatPropertyOfMineIsTicked ? TRUE : FALSE;
-	//	}
-	//}
+	EditData ed (SED);
+	switch(PropID)
+	{
+	case Prop::LoadFirst:
+		return ed.loadFirst;
+	case Prop::MultiImage:
+		return ed.multiImg;
+	case Prop::AbsCoords:
+		return ed.useAbs;
+	case Prop::KeepPoints:
+		return ed.keepPoints;
+	case Prop::ThreadedIO:
+		return ed.threadedIO;
+	case Prop::DisplayEditing:
+		return ed.dispTarget;
+	case Prop::SelectNew:
+		return ed.selectLast;
+	case Prop::Resampling:
+		return mvGetPropCheck(mV, SED, PROPID_FITEM_ANTIA); //Anti-aliasing
+
+	case Prop::Multiline:
+		return !(ed.textFlags & DT_SINGLELINE);
+	case Prop::NoClipping:
+		return (ed.textFlags & DT_NOCLIP) == DT_NOCLIP;
+	case Prop::WordBreak:
+		return (ed.textFlags & DT_WORDBREAK) == DT_WORDBREAK;
+	case Prop::Ellipsis:
+		return (ed.textFlags & DT_WORD_ELLIPSIS) == DT_WORD_ELLIPSIS;
+	}
 	//if you changed ed:
 	//ed.Serialize(mV, SED);
 #endif
@@ -222,16 +268,89 @@ BOOL MMF2Func GetPropCheck(mv *mV, SerializedED *SED, UINT PropID)
 void MMF2Func SetPropCheck(mv *mV, SerializedED *SED, UINT PropID, BOOL Ticked)
 {
 #ifndef RUN_ONLY
-	//EditData ed (SED);
-	//switch(PropID)
-	//{
-	//case Prop::MyCheckBoxPropertyOrPropertyThatHasTheCheckboxOptionSet:
-	//	{
-	//		ed.WhetherOrNotThatPropertyOfMineIsTicked = Ticked != FALSE ? true : false;
-	//	}
-	//}
+	EditData ed (SED);
+	switch(PropID)
+	{
+	case Prop::LoadFirst:
+		ed.loadFirst = Ticked;
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::LoadFirst, true);
+		break;
+	case Prop::MultiImage:
+		ed.MultiImage = Ticked;
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::MultiImage, true);
+		mvRefreshProp(mV, SED, Prop::LoadFirst, true);
+		mvRefreshProp(mV, SED, Prop::SelectNew, true);
+		mvRefreshProp(mV, SED, Prop::DisplayEditing, true);
+		break;
+	case Prop::AbsCoords:
+		ed.AbsCoords = Ticked;
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::AbsCoords, true);
+		break;
+	case Prop::KeepPoints:
+		ed.KeepPoints = Ticked;
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::KeepPoints, true);
+		break;
+	case Prop::ThreadedIO:
+		ed.ThreadedIO = Ticked;
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::ThreadedIO, true);
+		break;
+	case Prop::DisplayEditing:
+		ed.DisplayEditing = Ticked;
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::DisplayEditing, true);
+		break;
+	case Prop::SelectNew:
+		ed.SelectNew = Ticked;
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::SelectNew, true);
+		break;
+	case Prop::Resampling:
+		mvSetPropCheck(mV,SED,Prop::FITEM_ANTIA,Ticked);
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::Resampling, true);
+		mvRefreshProp(mV, SED, Prop::FITEM_ANTIA, true);
+		break;
+
+	case Prop::Multiline:
+		if(Ticked)
+			ed.textFlags &= ~DT_SINGLELINE;
+		else
+			ed.textFlags |= DT_SINGLELINE;
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::Multiline, true);
+		break;
+	case Prop::NoClipping:
+		if(Ticked)
+			ed.textFlags |= DT_NOCLIP;
+		else
+			ed.textFlags &= ~DT_NOCLIP;
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::NoClipping, true);
+		break;
+	case Prop::WordBreak:
+		if(Ticked)
+			ed.textFlags |= DT_WORDBREAK;
+		else
+			ed.textFlags &= ~DT_WORDBREAK;
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::WordBreak, true);
+		break;
+	case Prop::Ellipsis:
+		if(Ticked)
+			ed.textFlags |= DT_WORD_ELLIPSIS;
+		else
+			ed.textFlags &= ~DT_WORD_ELLIPSIS;
+		mvInvalidateObject(mV, SED);
+		mvRefreshProp(mV, SED, Prop::Ellipsis, true);
+		break;
+	}
 	//since you changed ed:
-	//ed.Serialize(mV, SED);
+	ed.Serialize(mV, SED);
 #endif
 }
 
@@ -247,17 +366,59 @@ void MMF2Func SetPropCheck(mv *mV, SerializedED *SED, UINT PropID, BOOL Ticked)
 BOOL MMF2Func EditProp(mv *mV, SerializedED *SED, UINT PropID)
 {
 #ifndef RUN_ONLY
-	//EditData ed (SED);
-	//switch(PropID)
-	//{
-	//case Prop::MyButtonPropertyOrPropertyThatHasAButtonWithIt:
-	//	{
-	//		//
-	//		break;
-	//	}
-	//}
+	EditData ed (SED);
+	switch(PropID)
+	{
+	case Prop::Remove:
+		{
+			if(MessagBox(NULL, _T("Do you really want to delete all images?"), _T("Warning"), MB_YESNO|MB_ICONWARNING) == IDYES)
+			{
+				mvInvalidateObject(mV, SED);
+				for(std::size_t i = 0; i < MAX_IMAGES; ++i)
+				{
+					ed.images[i] = 0;
+				}
+				ed.imageCount = 0;
+				//ed.width = 320;
+				//ed.height = 240;
+				mvRefreshProp(mV, SED, Prop::LoadFirst, true);
+				mvRefreshProp(mV, SED, Prop::Images, true);
+				return true;
+			}
+		} break;
+	case Prop::Images:
+		{
+			mvInvalidateObject(mV, SED);
+			EditAnimationParams eip;
+			eip.m_dwSize = sizeof(EditAnimationParams);
+			eip.m_pWindowTitle = 0;
+			eip.m_nImages = ed.imageCount;
+			eip.m_nMaxImages = MAX_IMAGES;
+			eip.m_nStartIndex = 0;
+			eip.m_pImages = &(ed.images[0]);
+			eip.m_pImageTitles = 0;
+			eip.m_dwOptions = PICTEDOPT_CANBETRANSPARENT|PICTEDOPT_HOTSPOT;
+			eip.m_dwFixedWidth = ed.width ? ed.width : DEF_WIDTH;
+			eip.m_dwFixedHeight = ed.height ? ed.height : DEF_HEIGHT;
+			BOOL output = mV->mvEditAnimation(edPtr, &eip, mV->mvHEditWin);
+			//Update object count
+			ed.imageCount = eip.m_nImages;
+			//Update object dimensions
+			if(output && edPtr->images[0])
+			{
+				cSurface is;
+				LockImageSurface(mV->mvIdAppli, ed.images[0], is);
+				ed.width = ed.width_def = is.GetWidth();
+				ed.height = ed.height_def = is.GetHeight();
+				UnlockImageSurface(is);
+			}
+			mvRefreshProp(mV, SED, Prop::LoadFirst, true);
+			mvRefreshProp(mV, SED, Prop::Images, true);
+			return output;
+		}
+	}
 	//if you changed ed:
-	//ed.Serialize(mV, SED);
+	ed.Serialize(mV, SED);
 #endif
 	return FALSE;
 }
@@ -272,21 +433,22 @@ BOOL MMF2Func EditProp(mv *mV, SerializedED *SED, UINT PropID)
 BOOL MMF2Func IsPropEnabled(mv *mV, SerializedED *SED, UINT PropID)
 {
 #ifndef RUN_ONLY
-	//EditData ed (SED);
+	EditData ed (SED);
 	switch(PropID)
 	{
 	case Prop::Version:
-		{
-			return FALSE; //Makes the version proeprty greyed out
-		}
-	//case Prop::MyString:	//intentional\\
-	//case Prop::MyInt:		//fallthrough\\
-	//	{
-	//		return TRUE; //allows the user to interact with these proeprties
-	//	}
+			return FALSE;
+	case Prop::LoadFirst:
+		return ed.multiImg || !ed.imageCount;
+	case Prop::SelectNew:
+		return ed.multiImg;
+	case Prop::DisplayEditing:
+		return ed.multiImg;
 	}
 	//if you changed ed:
 	//ed.Serialize(mV, SED);
+
+	return TRUE;
 #endif
 	return FALSE;
 }
