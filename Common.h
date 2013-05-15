@@ -20,6 +20,91 @@
 //Define this if you want legacy comma-less JSON support
 //	#define UsingJsonWithoutCommas
 
+#define RunDataPreInject
+struct PreInjectRD
+{
+	ImageBank  *surf;
+	cSurface   *target;
+	short       targetId;
+	bool        targetValid;
+	cSurface   *current;
+	short       currentId
+	,           lastId;
+	//Functions
+	cSurface *(*imageAt)(RD *rd, int image); //external interface
+	int       (*imageCount)(RD *rd);         //external interface
+	//Display surface for rotations and scaling
+	cSurface   *display;
+	//The default image depth
+	int         depth;
+	//Internal blit
+	BlitMode    bM;
+	BlitOp      bOp;
+	LPARAM      bParam;
+	DWORD       bFlags;
+	int         bdX
+	,           bdY
+	,           bdW
+	,           bdH
+	,           bStretch
+	,           bsX
+	,           bsY
+	,           bsW
+	,           bsH;
+	bool        bsRegion;
+	int         bAngle;
+	bool        bAngleResample;
+	char const *bCallback
+	,          *bProcOp;
+	float       bAlphaCompose;
+	int         bhX
+	,           bhY
+	,           bhMode;
+	//Callback
+	COLORREF    colSrc
+	,           colDest
+	,           colNew;
+	int         colAlphaSrc
+	,           colAlphaDest
+	,           colAlphaNew;
+	bool        colRet
+	,           colAlphaRet;
+	char const *callback;
+	int         callX
+	,           callY;
+	//Data
+	sMask      *collision;
+	PolyPoints *points;
+	FillDB     *fill;
+	//Font
+	HFONT       hFont;
+	DWORD       hFlags;
+	LOGFONT     textFont;
+	//Options
+	bool        useAbs
+	,           keepPoints
+	,           threadedIO
+	,           dispTarget
+	,           selectLast;
+	//Settings of non-existant surfaces
+	COLORREF    transCol;
+	//Buffer lock
+	BYTE       *buffer;
+	cSurface   *buffSurf;
+	int         buffPitch;
+	//Overlay compatibility
+	Overlay    *ovl;
+	//Flood fill
+	int         floodL
+	,           floodR
+	,           floodT
+	,           floodB;
+	//I/O stuff
+	char const *ioFile;
+	DWORD       ioFilter;
+	HANDLE      ioHandle;
+};
+
 #include "Edif.h"
 #include "Resource.h"
 
