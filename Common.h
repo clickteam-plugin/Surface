@@ -21,6 +21,7 @@
 //	#define UsingJsonWithoutCommas
 
 #define RunDataPreInject
+struct RD; //forward-declare for imageAt and imageCount
 struct PreInjectRD
 {
 	ImageBank  *surf;
