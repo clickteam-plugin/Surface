@@ -41,13 +41,13 @@ PROPS_DATA_START()
 	PropData_Button(PROPID_REMOVEDEF,(int)"",(int)"",(int)"Remove"),
 	PropData_CheckBox(PROPID_MULTIIMG,(int)"Use multiple images",(int)"Actions to manage multiple images will be provided. Recommended over using multiple Surface objects	."),
 	PropData_CheckBox(PROPID_LOADIMG,(int)"Load first image on start",(int)"Loads and displays image 0 if available on start."),
-	PropData_CheckBox(PROPID_SELECTLAST,(int)"Select new images",(int)"When an image is added, it is automatically selected as the editing image."),
-	PropData_CheckBox(PROPID_DISPTARGET,(int)"Display editing image",(int)"\"Set current image\" will not be available and the editing image is drawn instead."),
+	PropData_CheckBox(PROPID_SELECTLAST,(int)"Select new images",(int)"When an image is added, it is automatically selected for editing."),
+	PropData_CheckBox(PROPID_DISPTARGET,(int)"Display selected image",(int)"\"Set display image\" will not be available and the selected editing image is drawn instead."),
 	PropData_Group(PROPID_GRP1,(int)"Settings",(int)""),
 	PropData_CheckBox(PROPID_USEABS,(int)"Use absolute coordinates",(int)"Coordinates are not relative to the surface position."),
-	PropData_CheckBox(PROPID_KEEPPOINTS,(int)"Keep points after drawing",(int)"The polygon points will be kept after drawing one."),
-	PropData_CheckBox(PROPID_THREADEDIO,(int)"Threaded file input/output",(int)"If checked, the application does not freeze while a file is being loaded or saved."),
-	PropData_CheckBox(PROPID_RESAMPLING,(int)"Linear resampling",(int)"Some actions like \"Resize\" and \"Rotate\" can achieve better quality with this option."),
+	PropData_CheckBox(PROPID_KEEPPOINTS,(int)"Keep polygon points after drawing",(int)"The polygon points will be kept after drawing one."),
+	PropData_CheckBox(PROPID_THREADEDIO,(int)"Background file input/output",(int)"If checked, the application does not freeze while a file is being loaded or saved."),
+	PropData_CheckBox(PROPID_RESAMPLING,(int)"Linear resampling for transformations",(int)"Some actions like \"Resize\" and \"Rotate\" can achieve better quality with this option."),
 PROPS_DATA_END()
 
 char* FontQuality[] =
@@ -1125,18 +1125,25 @@ void menucpy(HMENU hTargetMenu, HMENU hSourceMenu)
 		else
 		{
 			GetMenuString(hSourceMenu, n, strBuf, 80, MF_BYPOSITION);
-			if (id != -1)
-				AppendMenu(hTargetMenu, GetMenuState(hSourceMenu, n, MF_BYPOSITION), id, strBuf);
+			if (strBuf[0] == '~')
+			{
+				AppendMenu(hTargetMenu, MF_DISABLED | MF_GRAYED, id, strBuf+1);
+			}
 			else
 			{
-				hSubMenu = CreatePopupMenu();
-				AppendMenu(hTargetMenu, MF_POPUP | MF_STRING, (uint)hSubMenu, strBuf);
-				menucpy(hSubMenu, GetSubMenu(hSourceMenu, n));
+				if (id != -1)
+					AppendMenu(hTargetMenu, GetMenuState(hSourceMenu, n, MF_BYPOSITION), id, strBuf);
+				else
+				{
+					hSubMenu = CreatePopupMenu();
+					AppendMenu(hTargetMenu, MF_POPUP | MF_STRING, (uint)hSubMenu, strBuf);
+					menucpy(hSubMenu, GetSubMenu(hSourceMenu, n));
+				}
 			}
 		}
 	}
 	LocalFree((HLOCAL)strBuf);
-}
+} 
 
 // -----------------
 // GetPopupMenu

@@ -1,14 +1,15 @@
 #define ITEM_MULTIPLEIMG	ITEM(-1,"(Enable multiple images)")
+#define CATEGORY(x) ITEM(0, "~" x)
 
-// --------------------------------
+//:-------------------------------
 // Condition menu
-// --------------------------------
+//:-------------------------------
 
 #ifdef CONDITION_MENU
 
 	SEPARATOR
-	SUB_START("Fill data")
-		ITEM(14,"Fill data exists?")
+	SUB_START("Patterns")
+		ITEM(14,"Pattern exists?")
 		//SEPARATOR
 		//SUB_START("User callback")
 		//	ITEM(8,"On callback")
@@ -18,9 +19,9 @@
 		if(!edPtr||edPtr->multiImg)
 		{
 			//if(!edPtr||!edPtr->dispTarget)
-				ITEM(9,"Compare to current image")
-			ITEM(10,"Compare to editing image")
-			ITEM(7,"Set editing image (inline)")
+				ITEM(9,"Compare to displayed image")
+			ITEM(10,"Compare to selected image")
+			ITEM(7,"Select image (inline)")
 			SEPARATOR
 		}
 		ITEM(0,"Has alpha channel?")
@@ -46,14 +47,17 @@
 	ITEM(8,"On callback")
 #endif
 
-// --------------------------------
+//:-------------------------------
 // Action menu
-// --------------------------------
+//:-------------------------------
 
 #ifdef ACTION_MENU
 
 	SEPARATOR
 	SUB_START("Display settings")
+		if(!edPtr||!edPtr->dispTarget)
+			ITEM(1,"Set image to display")
+		SEPARATOR
 		ITEM(27,"Force redraw")
 		ITEM(104,"Skip redraw")
 		SEPARATOR
@@ -68,7 +72,7 @@
 		if(!edPtr||edPtr->multiImg)
 		{
 			ITEM(110,"Set select new images")
-			ITEM(109,"Set display editing image")
+			ITEM(109,"Set display selected image")
 			SEPARATOR
 		}
 		ITEM(42,"Set use absolute coords")
@@ -77,7 +81,39 @@
 		ITEM(81,"Set linear resampling")
 	SUB_END
 	SEPARATOR
-	SUB_START("Fill data")
+	SUB_START("Images")
+	if(!edPtr||edPtr->multiImg)
+	{
+		ITEM(29,"Select image")
+		SEPARATOR
+		ITEM(17,"Add image")
+		ITEM(12,"Insert image")
+		SEPARATOR
+		SUB_START("Copy image")
+			ITEM(28,"From another image")
+			ITEM(121,"From Surface object")
+			ITEM(131,"From image reference")
+		SUB_END
+		SEPARATOR
+		ITEM(91,"Swap two images")
+		SEPARATOR
+		ITEM(11,"Delete image")
+		ITEM(18,"Delete all images")
+		SEPARATOR
+		SUB_START("References")
+			ITEM(129,"Add reference")
+			ITEM(130,"Insert reference")
+			SEPARATOR
+			ITEM(132,"Set reference value")
+			ITEM(133,"Set reference state")
+		SUB_END
+	}
+	else
+	{
+		ITEM_MULTIPLEIMG
+	}
+	SUB_END
+	SUB_START("Patterns")
 		SUB_START("Color")
 			ITEM(43,"Create")
 			ITEM(72,"Set color")
@@ -110,40 +146,6 @@
 		}
 		SEPARATOR
 		ITEM(77,"Delete")
-	SUB_END
-	SUB_START("Images")
-	if(!edPtr||edPtr->multiImg)
-	{
-		if(!edPtr||!edPtr->dispTarget)
-			ITEM(1,"Set current image")
-		ITEM(29,"Set editing image")
-		SEPARATOR
-		ITEM(17,"Add image")
-		ITEM(12,"Insert image")
-		SEPARATOR
-		SUB_START("Copy image")
-			ITEM(28,"From another image")
-			ITEM(121,"From Surface object")
-			ITEM(131,"From binary surface")
-		SUB_END
-		SEPARATOR
-		ITEM(91,"Swap two images")
-		SEPARATOR
-		ITEM(11,"Delete image")
-		ITEM(18,"Delete all images")
-		SEPARATOR
-		SUB_START("References")
-			ITEM(129,"Add reference")
-			ITEM(130,"Insert reference")
-			SEPARATOR
-			ITEM(132,"Set binary address")
-			ITEM(133,"Set reference state")
-		SUB_END
-	}
-	else
-	{
-		ITEM_MULTIPLEIMG
-	}
 	SUB_END
 	SUB_START("Polygons")
 		ITEM(142,"Add point")
@@ -178,19 +180,58 @@
 		ITEM(86,"Set word break")
 	SUB_END
 	SEPARATOR
-	SUB_START("Adjust")
-		ITEM(106,"Convert to grayscale")
-		ITEM(98,"Invert image")
+	CATEGORY("- Selected image -")
+	SUB_START("Settings")
+		ITEM(24,"Set transparent color")
 		SEPARATOR
-		ITEM(61,"Apply matrix")
-		ITEM(92,"Move color channels")
+		ITEM(143,"Set hot spot")
+		ITEM(144,"Set hot spot (percent)")
 		SEPARATOR
+		ITEM(96,"Set clipping rectangle")
+		ITEM(97,"Clear clipping rectangle")
+#ifdef HWABETA
+		SEPARATOR
+		ITEM(156, "Convert to bitmap")
+		ITEM(154, "Convert to HWA texture")
+		ITEM(155, "Convert to HWA target")
+#endif
+	SUB_END
+	SUB_START("Input / Output")
+		ITEM(153,"Load from file")
+		ITEM(14,"Save to file")
+		SEPARATOR
+		ITEM(47,"Load from clipboard")
+		ITEM(48,"Save to clipboard")
+		SEPARATOR
+		ITEM(163, "Restore")
+		ITEM(162, "Store")
+		SEPARATOR
+		SUB_START("Advanced")
+			ITEM(68,"Export as Overlay")
+			SEPARATOR
+			ITEM(112,"Lock buffer")
+			ITEM(113,"Unlock buffer")
+			ITEM(128,"Write bytes")
+		SUB_END
+	SUB_END
+	CATEGORY("- Pixel processing -")
+	SUB_START("Adjustments")
+		ITEM(164, "Apply brightness")
+		ITEM(165, "Apply contrast")
+		ITEM(98,"Invert colors")
+		ITEM(166, "Normalize")
 		SUB_START("Perform operation")
 			ITEM(26,"With color for RGB")
 			ITEM(123,"With value for...")
 			//SEPARATOR
 			//ITEM(154,"With condition and value for...")
-		SUB_END
+		SUB_END	
+		SEPARATOR
+		ITEM(106,"Convert to grayscale")
+		ITEM(92,"Move color channels")
+		ITEM(161,"Apply color matrix")
+		SEPARATOR
+		ITEM(61,"Apply convolution matrix")
 		//SEPARATOR
 		//ITEM(155,"Evaluate")
 	SUB_END
@@ -203,31 +244,8 @@
 		ITEM(25,"Draw line")
 		ITEM(7,"Draw rectangle")
 	SUB_END
-	SUB_START("Blit")
-		SUB_START("From the surface")
-			if(!edPtr||edPtr->multiImg)
-			{
-				SUB_START("From the alpha channel")
-					ITEM(124,"Alpha channel")
-				SUB_END
-				SEPARATOR
-				ITEM(0,"Image")
-				ITEM(19,"Alpha channel")
-				SEPARATOR
-			}
-			SUB_START("External")
-				ITEM(65,"Background")
-				ITEM(71,"Overlay")
-				ITEM(89,"Surface")
-				SEPARATOR
-				ITEM(64,"Add backdrop")
-			SUB_END
-			SUB_START("Advanced")
-				ITEM(83,"Binary surface")
-				ITEM(88,"Window handle")
-			SUB_END
-		SUB_END
-		SUB_START("Onto the surface")
+	SUB_START("Blitting")
+		SUB_START("From...")
 			if(!edPtr||edPtr->multiImg)
 			{
 				SUB_START("Onto the alpha channel")
@@ -248,11 +266,35 @@
 				ITEM(90,"Surface")
 			SUB_END
 			SUB_START("Advanced")
-				ITEM(82,"Binary surface")
+				ITEM(82,"Image reference")
 				ITEM(87,"Window handle")
 			SUB_END
 		SUB_END
+		SUB_START("Onto...")
+			if(!edPtr||edPtr->multiImg)
+			{
+				SUB_START("From the alpha channel")
+					ITEM(124,"Alpha channel")
+				SUB_END
+				SEPARATOR
+				ITEM(0,"Image")
+				ITEM(19,"Alpha channel")
+				SEPARATOR
+			}
+			SUB_START("External")
+				ITEM(65,"Background")
+				ITEM(71,"Overlay")
+				ITEM(89,"Surface")
+				SEPARATOR
+				ITEM(64,"Add backdrop")
+			SUB_END
+			SUB_START("Advanced")
+				ITEM(83,"Image reference")
+				ITEM(88,"Window handle")
+			SUB_END
+		SUB_END
 		SEPARATOR
+		CATEGORY("- Position && Size -")
 		SUB_START("Destination")
 			ITEM(41,"Set position")
 			ITEM(66,"Set dimensions")
@@ -295,52 +337,28 @@
 			ITEM(37,"Set transparency")
 		SUB_END
 	SUB_END
-	SUB_START("Callback")
+	SUB_START("Callbacks")
 		ITEM(95,"Loop through image")
 		ITEM(137,"Loop through area")
 		//SEPARATOR
 		//ITEM(153,"Loop through image with condition")
 		SEPARATOR
+		CATEGORY("On callback:")
 		ITEM(138,"Return alpha")
 		ITEM(94,"Return color")
 	SUB_END
-	SUB_START("Input / Output")
-		ITEM(153,"Load from file")
-		ITEM(14,"Save to file")
-		SEPARATOR
-		ITEM(47,"Load from clipboard")
-		ITEM(48,"Save to clipboard")
-		SEPARATOR
-		ITEM(68,"Export as Overlay")
-		SEPARATOR
-		ITEM(112,"Lock buffer")
-		ITEM(113,"Unlock buffer")
-		ITEM(128,"Write bytes")
-	SUB_END
-	SUB_START("Settings")
-		ITEM(24,"Set transparent color")
-		SEPARATOR
-		ITEM(143,"Set hot spot")
-		ITEM(144,"Set hot spot (percent)")
-		SEPARATOR
-		ITEM(96,"Set clipping rectangle")
-		ITEM(97,"Clear clipping rectangle")
-		SEPARATOR
-		ITEM(156, "Convert to bitmap")
-		ITEM(154, "Convert to HWA texture")
-		ITEM(155, "Convert to HWA target")
-	SUB_END
-	SUB_START("Transform")
+	SUB_START("Transformations")
 		ITEM(13,"Resize")
 		ITEM(80,"Rotate")
 		SEPARATOR
 		ITEM(78,"Resize canvas")
-		ITEM(23,"Minimize")
+		ITEM(23,"Minimize canvas")
 		SEPARATOR
 		ITEM(21,"Reverse X")
 		ITEM(22,"Reverse Y")
 		ITEM(93,"Scroll")
 	SUB_END
+	CATEGORY("- Drawing -")
 	SUB_START("With color")
 		ITEM(3,"Clear")
 		ITEM(2,"Set pixel")
@@ -349,17 +367,30 @@
 		SEPARATOR
 		ITEM(10,"Draw line")
 		SUB_START("Draw rectangle")
+			CATEGORY("Simple:")
 			ITEM(9,"Via bounding box")
 			ITEM(119,"Via position and size")
+			SEPARATOR
+			CATEGORY("With outline:")
+			ITEM(159,"Via bounding box")
+			ITEM(166,"Via position and size")
 		SUB_END
 		SUB_START("Draw ellipse")
+			CATEGORY("Simple:")
 			ITEM(8,"Via bounding box")
 			ITEM(101,"Via center and size")
+			SEPARATOR
+			CATEGORY("With outline:")
+			ITEM(158,"Via bounding box")
+			ITEM(167,"Via center and size")
 		SUB_END
-		ITEM(30,"Draw polygon")
+		SUB_START("Draw polygon")
+			ITEM(160,"Simple")
+			ITEM(30,"With outline")
+		SUB_END
 		ITEM(52,"Draw text")
 	SUB_END
-	SUB_START("With fill data")
+	SUB_START("With pattern")
 			ITEM(79,"Clear")
 			SEPARATOR
 			ITEM(69,"Draw line")
@@ -377,9 +408,9 @@
 #endif
 
 
-// --------------------------------
+//:-------------------------------
 // Expression menu
-// --------------------------------
+//:-------------------------------
 
 #ifdef EXPRESSION_MENU
 	
@@ -390,9 +421,9 @@
 		ITEM(71,"Angle")
 	SUB_END
 	SEPARATOR
-	SUB_START("Fill data")
-		ITEM(40,"Fill data from index")
-		ITEM(41,"Fill data count")
+	SUB_START("Pattern")
+		ITEM(40,"Pattern from index")
+		ITEM(41,"Pattern count")
 		SEPARATOR
 		ITEM(42,"Color")
 		SUB_START("Linear gradient")
@@ -420,7 +451,7 @@
 			ITEM(8,"Width")
 			ITEM(9,"Height")
 		SUB_END
-		SUB_START("Editing image")
+		SUB_START("Selected image")
 			ITEM(1,"Index")
 			SEPARATOR
 	}
@@ -441,7 +472,7 @@
 		ITEM(62,"Hot spot X")
 		ITEM(63,"Hot spot Y")
 		SEPARATOR
-		ITEM(52,"Binary address")
+		ITEM(52,"Reference value")
 	SUB_END
 	if(!edPtr||edPtr->multiImg)
 	{
@@ -459,7 +490,7 @@
 			ITEM(60,"Hot spot X")
 			ITEM(61,"Hot spot Y")
 			SEPARATOR
-			ITEM(53,"Binary address")
+			ITEM(53,"Reference value")
 		SUB_END
 	}
 	SEPARATOR
@@ -511,7 +542,7 @@
 		ITEM(26,"Multiply two colors")
 		ITEM(24,"Blend two colors")
 	SUB_END
-	SUB_START("Binary surfaces")
+	SUB_START("Image references")
 		ITEM(68,"Transformed Surface")
 		SEPARATOR
 		ITEM(57,"Background")

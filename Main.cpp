@@ -105,7 +105,7 @@ CONDITION(
 //	/* ID */			8,
 //	/* Name */			"%o: On fill callback %0",
 //	/* Flags */			0,
-//	/* Params */		(1,PARAM_STRING,"Fill data")
+//	/* Params */		(1,PARAM_STRING,"Pattern")
 //) {
 //	return !rdPtr->userTrigger&&!strcmp((char*)param1,rdPtr->userData);
 //}
@@ -121,7 +121,7 @@ CONDITION(
 
 CONDITION(
 	/* ID */			9,
-	/* Name */			"%o: Current image %0",
+	/* Name */			"%o: Displayed image %0",
 	/* Flags */			EVFLAGS_ALWAYS,
 	/* Params */		(1,PARAM_COMPARISON,"Image")
 ) {
@@ -130,7 +130,7 @@ CONDITION(
 
 CONDITION(
 	/* ID */			10,
-	/* Name */			"%o: Editing image %0",
+	/* Name */			"%o: Selected image %0",
 	/* Flags */			EVFLAGS_ALWAYS,
 	/* Params */		(1,PARAM_COMPARISON,"Image")
 ) {
@@ -181,9 +181,9 @@ CONDITION(
 
 CONDITION(
 	/* ID */			14,
-	/* Name */			"%o: Fill data %0 exists",
+	/* Name */			"%o: Pattern %0 exists",
 	/* Flags */			EVFLAGS_ALWAYS|EVFLAG2_NOTABLE,
-	/* Params */		(1,PARAM_STRING,"Fill data name")
+	/* Params */		(1,PARAM_STRING,"Pattern name")
 ) {
 	string fill(GetStr());
 	return rdPtr->fill->find(fill)!=rdPtr->fill->end();
@@ -242,7 +242,7 @@ ACTION(
 }
 ACTION(
 	/* ID */			1,
-	/* Name */			"Set current image to %0",
+	/* Name */			"Display image %0",
 	/* Flags */			0,
 	/* Params */		(1,PARAM_NUMBER,"Image")
 ) {
@@ -342,6 +342,7 @@ ACTION(
 	int x = GetXPos();
 	int y = GetYPos();
 	int a = GetInt();
+	ActionFunc4(rdPtr, 1, 0);
 	if(TargetImg->HasAlpha())
 	{
 		cSurface* alpha = TargetImg->GetAlphaSurface();
@@ -360,6 +361,7 @@ ACTION(
 	/* Params */		(1,PARAM_NUMBER,"Alpha (0-255)")
 ) {
 	TargetExists();
+	ActionFunc4(rdPtr, 1, 0);
 	if(TargetImg->HasAlpha())
 	{
 		cSurface* alpha = TargetImg->GetAlphaSurface();
@@ -378,6 +380,7 @@ ACTION(
 	/* Params */		(5,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_NUMBER,"Alpha (0-255)")
 ) {
 	TargetExists();
+	ActionFunc4(rdPtr, 1, 0);
 	if(!TargetImg->HasAlpha()) return 0;
 	int x1 = GetXPos();
 	int y1 = GetYPos();
@@ -401,7 +404,7 @@ ACTION(
 }
 ACTION(
 	/* ID */			8,
-	/* Name */			"Draw ellipse (%0,%1,%2,%3) with color %4, outline %5 color %6",
+	/* Name */			"Draw ellipse (%0,%1,%2,%3) with color %4, outline thickness %5 outline color %6",
 	/* Flags */			0,
 	/* Params */		(7,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_COLOUR,"Fill color (-1: None)",PARAM_NUMBER,"Outline thickness",PARAM_COLOUR,"Outline color")
 ) {
@@ -422,7 +425,7 @@ ACTION(
 }
 ACTION(
 	/* ID */			9,
-	/* Name */			"Draw rectangle (%0,%1,%2,%3) with color %4, outline %5 color %6",
+	/* Name */			"Draw rectangle (%0,%1,%2,%3) with color %4, outline thickness %5 outline color %6",
 	/* Flags */			0,
 	/* Params */		(7,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_COLOUR,"Fill color (-1: None)",PARAM_NUMBER,"Outline thickness",PARAM_COLOUR,"Outline color")
 ) {
@@ -454,6 +457,10 @@ ACTION(
 	int y2 = GetYPos();
 	COLORREF col = GetCol();
 	int thick = GetInt();
+
+	if (thick <= 0)
+		return 0;
+
 	TargetImg->Line(x1,y1,x2,y2,thick,col);
 
 	if Current(rdPtr->targetId)
@@ -924,6 +931,7 @@ ACTION(
 	/* Params */		(5,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_NUMBER,"Alpha (0-255)")
 ) {
 	TargetExists();
+	ActionFunc25(rdPtr, 1, 0);
 	if(!TargetImg->HasAlpha()) return 0;
 	int x1 = GetXPos();
 	int y1 = GetYPos();
@@ -1052,7 +1060,7 @@ ACTION(
 }
 ACTION(
 	/* ID */			29,
-	/* Name */			"Set editing image to %0",
+	/* Name */			"Select image %0",
 	/* Flags */			0,
 	/* Params */		(1,PARAM_NUMBER,"Image")
 ) {
@@ -1068,7 +1076,7 @@ ACTION(
 
 ACTION(
 	/* ID */			30,
-	/* Name */			"Draw polygon at (%0,%1) with color %2, outline %3 color %4",
+	/* Name */			"Draw polygon at (%0,%1) with color %2, outline thickness %3, outline color %4",
 	/* Flags */			0,
 	/* Params */		(5,PARAM_NUMBER,"X",PARAM_NUMBER,"Y",PARAM_COLOUR,"Fill color (-1: None)",PARAM_NUMBER,"Outline thickness",PARAM_COLOUR,"Outline color")
 ) {
@@ -1279,9 +1287,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			43,
-	/* Name */			"Create color fill data %0 with color %1",
+	/* Name */			"Create color pattern %0 with color %1",
 	/* Flags */			0,
-	/* Params */		(2,PARAM_STRING,"Fill data name",PARAM_COLOUR,"Color")
+	/* Params */		(2,PARAM_STRING,"Pattern name",PARAM_COLOUR,"Color")
 ) {
 	string str = string(GetStr());
 	if(!str[0]) return 0;
@@ -1300,9 +1308,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			44,
-	/* Name */			"Draw rectangle (%0,%1,%2,%3) with fill data %4, outline %5 data %6",
+	/* Name */			"Draw rectangle (%0,%1,%2,%3) with fill pattern %4, outline thickness %5, outline pattern %6",
 	/* Flags */			0,
-	/* Params */		(7,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_STRING,"Fill data (Empty: None)",PARAM_NUMBER,"Outline thickness",PARAM_STRING,"Outline data (Empty: None)")
+	/* Params */		(7,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_STRING,"Pattern (Empty: None)",PARAM_NUMBER,"Outline thickness",PARAM_STRING,"Outline pattern (Empty: None)")
 ) {
 	TargetExists();
 	int x1 = GetXPos();
@@ -1345,9 +1353,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			45,
-	/* Name */			"Create tiled image fill data %0 with image %1 and offset (%2,%3)",
+	/* Name */			"Create tiled image pattern %0 with image %1 and offset (%2,%3)",
 	/* Flags */			0,
-	/* Params */		(4,PARAM_STRING,"Fill data name",PARAM_NUMBER,"Image",PARAM_NUMBER,"X Offset",PARAM_NUMBER,"Y Offset")
+	/* Params */		(4,PARAM_STRING,"Pattern name",PARAM_NUMBER,"Image",PARAM_NUMBER,"X Offset",PARAM_NUMBER,"Y Offset")
 ) {
 	string str = string(GetStr());
 	if(!str[0]) return 0;
@@ -1369,9 +1377,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			46,
-	/* Name */			"Create linear gradient fill data %0 with colors (%1,%2), vertical = %3",
+	/* Name */			"Create linear gradient pattern %0 with colors (%1,%2), vertical = %3",
 	/* Flags */			0,
-	/* Params */		(4,PARAM_STRING,"Fill data name",PARAM_COLOUR,"Color A",PARAM_COLOUR,"Color B",PARAM_NUMBER,"Vertical? (0: No, 1: Yes)")
+	/* Params */		(4,PARAM_STRING,"Pattern name",PARAM_COLOUR,"Color A",PARAM_COLOUR,"Color B",PARAM_NUMBER,"Vertical? (0: No, 1: Yes)")
 ) {
 	string str = string(GetStr());
 	if(!str[0]) return 0;
@@ -1493,9 +1501,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			50,
-	/* Name */			"Draw ellipse (%0,%1,%2,%3) with fill data %4, outline %5 data %6",
+	/* Name */			"Draw ellipse (%0,%1,%2,%3) with pattern %4, outline thickness %5, outline pattern %6",
 	/* Flags */			0,
-	/* Params */		(7,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_STRING,"Fill data (Empty: None)",PARAM_NUMBER,"Outline thickness",PARAM_STRING,"Outline data (Empty: None)")
+	/* Params */		(7,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_STRING,"Pattern (Empty: None)",PARAM_NUMBER,"Outline thickness",PARAM_STRING,"Outline pattern (Empty: None)")
 ) {
 	TargetExists();
 	int x1 = GetXPos();
@@ -1538,9 +1546,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			51,
-	/* Name */			"Draw polygon at (%0,%1) with fill data %2, outline %3 data %4",
+	/* Name */			"Draw polygon at (%0,%1) with pattern %2, outline thickness %3, outline pattern %4",
 	/* Flags */			0,
-	/* Params */		(5,PARAM_NUMBER,"X",PARAM_NUMBER,"Y",PARAM_STRING,"Fill data (Empty: None)",PARAM_NUMBER,"Outline thickness",PARAM_STRING,"Outline data (Empty: None)")
+	/* Params */		(5,PARAM_NUMBER,"X",PARAM_NUMBER,"Y",PARAM_STRING,"Pattern (Empty: None)",PARAM_NUMBER,"Outline thickness",PARAM_STRING,"Outline pattern (Empty: None)")
 ) {
 	TargetExists();
 	int ox = GetXPos();
@@ -1782,7 +1790,7 @@ ACTION(
 				filter[x][y][i] = TOFIX(i*ff[x][y]);
 
 	// Build input->output table
-	BYTE convert[0x1000];
+	static BYTE convert[0x1000];
 	for(int i = 0; i < 0x1000; ++i)
 		convert[i] = max(0, min(255, TOFIX(i)/div + off));
 
@@ -2031,9 +2039,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			69,
-	/* Name */			"Draw line (%0,%1,%2,%3) with fill data %4 and thickness %5",
+	/* Name */			"Draw line (%0,%1,%2,%3) with pattern %4 and thickness %5",
 	/* Flags */			0,
-	/* Params */		(6,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_STRING,"Fill data",PARAM_NUMBER,"Thickness")
+	/* Params */		(6,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_STRING,"Pattern",PARAM_NUMBER,"Thickness")
 ) {
 	TargetExists();
 	int x1 = GetXPos();
@@ -2045,14 +2053,14 @@ ACTION(
 
 	FillGuide* fillData=0;
 
-	//No fill data
-	if(!fill[0])
+	//No pattern
+	if(!fill[0] || thick <= 0)
 		return 0;
 
 	//rdPtr->userXOff = min(x1,x2);
 	//rdPtr->userYOff = min(y1,y2);
 
-	//Fill data must exist
+	//Pattern must exist
 	if(rdPtr->fill->find(fill)!=rdPtr->fill->end())
 	{
 		fillData = rdPtr->fill->find(fill)->second;
@@ -2105,9 +2113,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			72,
-	/* Name */			"Set color of fill data %0 to %1",
+	/* Name */			"Set color of pattern %0 to %1",
 	/* Flags */			0,
-	/* Params */		(2,PARAM_STRING,"Fill data name",PARAM_COLOUR,"Color")
+	/* Params */		(2,PARAM_STRING,"Pattern name",PARAM_COLOUR,"Color")
 ) {
 	string fill = string(GetStr());
 	COLORREF color = GetCol();
@@ -2125,9 +2133,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			73,
-	/* Name */			"Set colors of fill data %0 to (%1,%2)",
+	/* Name */			"Set colors of pattern %0 to (%1,%2)",
 	/* Flags */			0,
-	/* Params */		(3,PARAM_STRING,"Fill data name",PARAM_COLOUR,"Color A",PARAM_COLOUR,"Color B")
+	/* Params */		(3,PARAM_STRING,"Pattern name",PARAM_COLOUR,"Color A",PARAM_COLOUR,"Color B")
 ) {
 	string fill = string(GetStr());
 	if(!fill[0]) return 0;
@@ -2148,9 +2156,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			74,
-	/* Name */			"Set vertical flag of fill data %0 to %1",
+	/* Name */			"Set vertical flag of pattern %0 to %1",
 	/* Flags */			0,
-	/* Params */		(2,PARAM_STRING,"Fill data name",PARAM_NUMBER,"Vertical? (0: No, 1: Yes)")
+	/* Params */		(2,PARAM_STRING,"Pattern name",PARAM_NUMBER,"Vertical? (0: No, 1: Yes)")
 ) {
 	string fill = string(GetStr());
 	if(!fill[0]) return 0;
@@ -2168,9 +2176,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			75,
-	/* Name */			"Set origin of fill data %0 to (%1,%2)",
+	/* Name */			"Set origin of pattern %0 to (%1,%2)",
 	/* Flags */			0,
-	/* Params */		(3,PARAM_STRING,"Fill data name",PARAM_NUMBER,"X Origin",PARAM_NUMBER,"Y Origin")
+	/* Params */		(3,PARAM_STRING,"Pattern name",PARAM_NUMBER,"X Origin",PARAM_NUMBER,"Y Origin")
 ) {
 	string fill = string(GetStr());
 	if(!fill[0]) return 0;
@@ -2188,9 +2196,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			76,
-	/* Name */			"Set image of fill data %0 to %1",
+	/* Name */			"Set image of pattern %0 to %1",
 	/* Flags */			0,
-	/* Params */		(2,PARAM_STRING,"Fill data name",PARAM_NUMBER,"Image")
+	/* Params */		(2,PARAM_STRING,"Pattern name",PARAM_NUMBER,"Image")
 ) {
 	string fill = string(GetStr());
 	if(!fill[0]) return 0;
@@ -2212,9 +2220,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			77,
-	/* Name */			"Delete fill data %0",
+	/* Name */			"Delete pattern %0",
 	/* Flags */			0,
-	/* Params */		(1,PARAM_STRING,"Fill data name")
+	/* Params */		(1,PARAM_STRING,"Pattern name")
 ) {
 	string fill = string(GetStr());
 	if(!fill[0]) return 0;
@@ -2279,9 +2287,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			79,
-	/* Name */			"Clear with fill data %0",
+	/* Name */			"Clear with pattern %0",
 	/* Flags */			0,
-	/* Params */		(1,PARAM_STRING,"Fill data")
+	/* Params */		(1,PARAM_STRING,"Pattern")
 ) {
 	string fill = string(GetStr()); 
 	if(!fill[0]) return 0;
@@ -2340,9 +2348,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			82,
-	/* Name */			"Blit binary surface at %0",
+	/* Name */			"Blit image referenced at %0",
 	/* Flags */			0,
-	/* Params */		(1,PARAM_NUMBER,"Surface address")
+	/* Params */		(1,PARAM_NUMBER,"Reference value")
 ) {
 	TargetExists();
 	cSurface* surf = (cSurface*)GetInt();
@@ -2358,9 +2366,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			83,
-	/* Name */			"Blit onto binary surface at %0",
+	/* Name */			"Blit onto image referenced at %0",
 	/* Flags */			0,
-	/* Params */		(1,PARAM_NUMBER,"Surface address")
+	/* Params */		(1,PARAM_NUMBER,"Reference value")
 ) {
 	TargetExists();
 	cSurface* surf = (cSurface*)GetInt();
@@ -2772,9 +2780,9 @@ ACTION(
 
 //ACTION(
 //	/* ID */			95,
-//	/* Name */			"Create user callback fill data %0",
+//	/* Name */			"Create user callback pattern %0",
 //	/* Flags */			0,
-//	/* Params */		(1,PARAM_STRING,"Fill data name")
+//	/* Params */		(1,PARAM_STRING,"Pattern name")
 //) {
 //	string str = string(GetStr());
 //	if(!str[0]) return 0;
@@ -3026,7 +3034,7 @@ ACTION(
 }
 ACTION(
 	/* ID */			101,
-	/* Name */			"Draw ellipse at (%0,%1) with size (%2,%3) and color %4, outline %5 color %6",
+	/* Name */			"Draw ellipse at (%0,%1) with size (%2,%3) and color %4, outline thickness %5, outline pattern %6",
 	/* Flags */			0,
 	/* Params */		(7,PARAM_NUMBER,"Center X",PARAM_NUMBER,"Center Y",PARAM_NUMBER,"Width",PARAM_NUMBER,"Height",PARAM_COLOUR,"Fill color (-1: None)",PARAM_NUMBER,"Outline thickness",PARAM_COLOUR,"Outline color")
 ) {
@@ -3048,9 +3056,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			102,
-	/* Name */			"Draw ellipse at (%0,%1) with size (%2,%3) and fill data %4, outline %5 data %6",
+	/* Name */			"Draw ellipse at (%0,%1) with size (%2,%3) and pattern %4, outline thickness %5, outline pattern %6",
 	/* Flags */			0,
-	/* Params */		(7,PARAM_NUMBER,"Center X",PARAM_NUMBER,"Center Y",PARAM_NUMBER,"Width",PARAM_NUMBER,"Height",PARAM_STRING,"Fill data (Empty: None)",PARAM_NUMBER,"Outline thickness",PARAM_STRING,"Outline data (Empty: None)")
+	/* Params */		(7,PARAM_NUMBER,"Center X",PARAM_NUMBER,"Center Y",PARAM_NUMBER,"Width",PARAM_NUMBER,"Height",PARAM_STRING,"Pattern (Empty: None)",PARAM_NUMBER,"Outline thickness",PARAM_STRING,"Outline pattern (Empty: None)")
 ) {
 	TargetExists();
 	int x = GetXPos(); int y = GetYPos();
@@ -3249,9 +3257,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			107,
-	/* Name */			"Create radial gradient fill data %0 with colors (%1,%2)",
+	/* Name */			"Create radial gradient pattern %0 with colors (%1,%2)",
 	/* Flags */			0,
-	/* Params */		(3,PARAM_STRING,"Fill data name",PARAM_COLOUR,"Color A",PARAM_COLOUR,"Color B")
+	/* Params */		(3,PARAM_STRING,"Pattern name",PARAM_COLOUR,"Color A",PARAM_COLOUR,"Color B")
 ) {
 	string str = string(GetStr());
 	if(!str[0]) return 0;
@@ -3279,9 +3287,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			109,
-	/* Name */			"Set display editing image to %0",
+	/* Name */			"Set display selected image to %0",
 	/* Flags */			0,
-	/* Params */		(1,PARAM_NUMBER,"Display editing image? (0: No, 1: Yes)")
+	/* Params */		(1,PARAM_NUMBER,"Display selected image? (0: No, 1: Yes)")
 ) {
 	rdPtr->dispTarget = param1;
 	return 0;
@@ -3291,7 +3299,7 @@ ACTION(
 	/* ID */			110,
 	/* Name */			"Set select new images to %0",
 	/* Flags */			0,
-	/* Params */		(1,PARAM_NUMBER,"Display editing image? (0: No, 1: Yes)")
+	/* Params */		(1,PARAM_NUMBER,"Display selected image? (0: No, 1: Yes)")
 ) {
 	rdPtr->selectLast = param1;
 	return 0;
@@ -3404,7 +3412,7 @@ ACTION(
 }
 ACTION(
 	/* ID */			119,
-	/* Name */			"Draw rectangle at (%0,%1) with size (%2,%3) and color %4, outline %5 color %6",
+	/* Name */			"Draw rectangle at (%0,%1) with size (%2,%3) and color %4, outline thickness %5, outline color %6",
 	/* Flags */			0,
 	/* Params */		(7,PARAM_NUMBER,"X",PARAM_NUMBER,"Y",PARAM_NUMBER,"Width",PARAM_NUMBER,"Height",PARAM_COLOUR,"Fill color (-1: None)",PARAM_NUMBER,"Outline thickness",PARAM_COLOUR,"Outline color")
 ) {
@@ -3425,9 +3433,9 @@ ACTION(
 }
 ACTION(
 	/* ID */			120,
-	/* Name */			"Draw rectangle at (%0,%1) with size (%2,%3) and fill data %4, outline %5 data %6",
+	/* Name */			"Draw rectangle at (%0,%1) with size (%2,%3) and pattern %4, outline thickness %5, outline color %6",
 	/* Flags */			0,
-	/* Params */		(7,PARAM_NUMBER,"X",PARAM_NUMBER,"Y",PARAM_NUMBER,"Width",PARAM_NUMBER,"Height",PARAM_STRING,"Fill data (Empty: None)",PARAM_NUMBER,"Outline thickness",PARAM_STRING,"Outline data (Empty: None)")
+	/* Params */		(7,PARAM_NUMBER,"X",PARAM_NUMBER,"Y",PARAM_NUMBER,"Width",PARAM_NUMBER,"Height",PARAM_STRING,"Pattern (Empty: None)",PARAM_NUMBER,"Outline thickness",PARAM_STRING,"Outline pattern (Empty: None)")
 ) {
 	TargetExists();
 	int x = GetXPos();
@@ -3708,7 +3716,7 @@ ACTION(
 	/* ID */			129,
 	/* Name */			"Add image reference for %0",
 	/* Flags */			0,
-	/* Params */		(1,PARAM_NUMBER,"Binary surface address")
+	/* Params */		(1,PARAM_NUMBER,"Reference value")
 ) {
 	cSurface* tmp = (cSurface*)GetInt();
 	if(!tmp)
@@ -3737,7 +3745,7 @@ ACTION(
 	/* ID */			130,
 	/* Name */			"Insert image reference for %1 at %0",
 	/* Flags */			0,
-	/* Params */		(2,PARAM_NUMBER,"Image",PARAM_NUMBER,"Binary surface address")
+	/* Params */		(2,PARAM_NUMBER,"Image",PARAM_NUMBER,"Reference value")
 ) {
 	int id = GetInt();
 	ImageIsSafe(id);
@@ -3771,9 +3779,9 @@ ACTION(
 
 ACTION(
 	/* ID */			131,
-	/* Name */			"Copy image %0 from binary surface %1",
+	/* Name */			"Copy image %0 from image referenced at %1",
 	/* Flags */			0,
-	/* Params */		(2,PARAM_NUMBER,"Destination image",PARAM_NUMBER,"Binary surface address")
+	/* Params */		(2,PARAM_NUMBER,"Destination image",PARAM_NUMBER,"Reference value")
 ) {
 	int img = GetInt();
 	ImageInRange(img);
@@ -3802,9 +3810,9 @@ ACTION(
 
 ACTION(
 	/* ID */			132,
-	/* Name */			"Set binary address of image %0 to %1",
+	/* Name */			"Set reference value of image %0 to %1",
 	/* Flags */			0,
-	/* Params */		(2,PARAM_NUMBER,"Image",PARAM_NUMBER,"Binary surface address")
+	/* Params */		(2,PARAM_NUMBER,"Image",PARAM_NUMBER,"Reference value")
 ) {
 	int id = GetInt();
 	ImageExists(id);
@@ -4115,9 +4123,9 @@ ACTION(
 
 ACTION(
 	/* ID */			145,
-	/* Name */			"Create callback fill data %0",
+	/* Name */			"Create callback pattern %0",
 	/* Flags */			0,
-	/* Params */		(1,PARAM_STRING,"Fill data name")
+	/* Params */		(1,PARAM_STRING,"Pattern name")
 ) {
 	char* callback = GetStr();
 	string str = string(callback);
@@ -4381,6 +4389,326 @@ ACTION(
 	rdPtr->bParam = ((param2 & 0xff) << 24) | ((param1 & 0xff0000) >> 16) | (param1 & 0xff00) | ((param1 & 0xff) << 16);
 	return 0;
 }
+
+ACTION(
+	/* ID */			158,
+	/* Name */			"Draw ellipse (%0,%1,%2,%3) with color %4",
+	/* Flags */			0,
+	/* Params */		(5,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_COLOUR,"Fill color")
+) {
+	TargetExists();
+	int x1 = GetXPos();
+	int y1 = GetYPos();
+	int x2 = GetXPos();
+	int y2 = GetYPos();
+	COLORREF fill = GetCol();
+	TargetImg->Ellipse(x1,y1,x2,y2,fill,0,0,TRUE);
+
+	if Current(rdPtr->targetId)
+		RectChanged(x1,y1,x2,y2);
+	
+	return 0;
+}
+ACTION(
+	/* ID */			159,
+	/* Name */			"Draw rectangle (%0,%1,%2,%3) with color %4",
+	/* Flags */			0,
+	/* Params */		(5,PARAM_NUMBER,"X1",PARAM_NUMBER,"Y1",PARAM_NUMBER,"X2",PARAM_NUMBER,"Y2",PARAM_COLOUR,"Fill color")
+) {
+	TargetExists();
+	int x1 = GetXPos();
+	int y1 = GetYPos();
+	int x2 = GetXPos();
+	int y2 = GetYPos();
+	COLORREF fill = GetCol();
+	TargetImg->Rectangle(x1,y1,x2,y2,fill,0,0,TRUE);
+
+	if Current(rdPtr->targetId)
+		RectChanged(x1,y1,x2,y2);
+	
+	return 0;
+}
+
+ACTION(
+	/* ID */			160,
+	/* Name */			"Draw polygon at (%0,%1) with color %2",
+	/* Flags */			0,
+	/* Params */		(3,PARAM_NUMBER,"X",PARAM_NUMBER,"Y",PARAM_COLOUR,"Fill color")
+) {
+	TargetExists();
+	int ox = GetXPos();
+	int oy = GetYPos();
+	COLORREF fill = GetCol();
+
+	int size = rdPtr->points->size();
+	POINT* tmp = new POINT[size];
+
+	for(int i=0;i<size;i++)
+	{
+		tmp[i].x = rdPtr->points->at(i).x+ox;
+		tmp[i].y = rdPtr->points->at(i).y+oy;
+	}
+
+	TargetImg->Polygon(tmp,size,fill,0,0,TRUE);
+
+	//Delete points
+	delete[] tmp;
+
+	//Don't keep points
+	if(!rdPtr->keepPoints)
+		rdPtr->points->clear();
+
+	if Current(rdPtr->targetId)
+		ImageChanged();
+	
+
+	return 0;
+}
+
+ACTION(
+	/* ID */			161,
+	/* Name */			"Apply color matrix R (%0,%1,%2), G (%3,%4,%5), B (%6,%7,%8)",
+	/* Flags */			0,
+	/* Params */		(9,
+	PARAM_NUMBER,"Red coefficient for new red (Default: 1)",PARAM_NUMBER,"Green coefficient for new red (Default: 0)",PARAM_NUMBER,"Blue coefficient for new red (Default: 0)",
+						PARAM_NUMBER,"Red coefficient for new green (Default: 0)",PARAM_NUMBER,"Green coefficient for new green  (Default: 1)",PARAM_NUMBER,"Blue coefficient for new green (Default: 0)",
+						PARAM_NUMBER,"Red coefficient for new blue (Default: 0)",PARAM_NUMBER,"Green coefficient for new blue (Default: 0)",PARAM_NUMBER,"Blue coefficient for new blue  (Default: 1)")
+) {
+	TargetExists();
+	float r_r, r_g, r_b;
+	float g_r, g_g, g_b;
+	float b_r, b_g, b_b;
+	LoadFloat(r_r);
+	LoadFloat(r_g);
+	LoadFloat(r_b);
+	LoadFloat(g_r);
+	LoadFloat(g_g);
+	LoadFloat(g_b);
+	LoadFloat(b_r);
+	LoadFloat(b_g);
+	LoadFloat(b_b);
+
+	//Dimensions
+	int width = TargetImg->GetWidth(), height = TargetImg->GetHeight();
+	//New RGB
+	int nr,ng,nb;
+	//Old RGB
+	COLORREF rgb;
+	//New position
+	int vx, vy;
+	//Other variables
+	int offset;
+
+	//Lock buffer, get pitch etc.
+	BYTE* buff;
+	buff = TargetImg->LockBuffer();
+	if(!buff) return 0;
+
+	int pitch = TargetImg->GetPitch();
+	if(pitch < 0)
+	{
+		pitch *= -1;
+		buff -= pitch*(height-1);
+	}
+	int size = pitch*height;
+	int byte = TargetImg->GetDepth()>>3;
+
+	BYTE* end = buff+size;
+
+	for(BYTE* y=buff; y<end ;y+=pitch)
+	{
+		BYTE* nextline = y+pitch;
+		for(BYTE* x=y; x<nextline; x+=byte)
+		{
+			int r = x[2];
+			int g = x[1];
+			int b = x[0];
+
+			x[2] = max(0, min(255, r*r_r + g*r_g + b*r_b));
+			x[1] = max(0, min(255, r*g_r + g*g_g + b*g_b));
+			x[0] = max(0, min(255, r*b_r + g*b_g + b*b_b));
+		}
+	}
+
+	TargetImg->UnlockBuffer(buff);
+
+	if Current(rdPtr->targetId)
+		ImageChanged();
+	
+
+	return 0;
+}
+ACTION(
+	/* ID */			162,
+	/* Name */			"Store image",
+	/* Flags */			0,
+	/* Params */		(0)
+) {
+	TargetExists();
+
+	if (rdPtr->stored)
+		delete rdPtr->stored;
+
+	rdPtr->stored = new cSurface;
+	rdPtr->stored->Clone(*TargetImg);
+	
+	return 0;
+}
+ACTION(
+	/* ID */			163,
+	/* Name */			"Restore image",
+	/* Flags */			0,
+	/* Params */		(0)
+) {
+	TargetExists();
+
+	if (rdPtr->stored)
+	{
+		Image(rdPtr->targetId)->Delete();
+		Image(rdPtr->targetId)->Clone(*rdPtr->stored);
+		TargetImg = Image(rdPtr->targetId);
+		rdPtr->targetValid = true;
+
+		if Current(rdPtr->targetId)
+			ImageChanged();
+	}
+	
+	return 0;
+}
+
+ACTION(
+	/* ID */			164,
+	/* Name */			"Apply brightness %0 to image",
+	/* Flags */			0,
+	/* Params */		(1, PARAM_NUMBER, "Brightness (1.0: No change)")
+) {
+	float brightness;
+	LoadFloat(brightness)
+	brightness *= 255;
+	TargetExists();
+	int width = TargetImg->GetWidth();
+	int height = TargetImg->GetHeight();
+
+	//Color channel
+	BYTE* buff;
+	buff = TargetImg->LockBuffer();
+	if(!buff) return 0;
+
+	int pitch = TargetImg->GetPitch();
+	if(pitch < 0)
+	{
+		pitch *= -1;
+		buff -= pitch*(height-1);
+	}
+	int size = pitch*height;
+	int byte = TargetImg->GetDepth()>>3;
+
+	BYTE* end = buff+size;
+
+	for(BYTE* y=buff; y<end ;y+=pitch)
+	{
+		BYTE* nextline = y+pitch;
+		for(BYTE* x=y; x<nextline; x+=byte)
+		{
+			x[2] = max(0, min(255, x[2] + brightness));
+			x[1] = max(0, min(255, x[1] + brightness));
+			x[0] = max(0, min(255, x[0] + brightness));
+		}
+	}
+
+	TargetImg->UnlockBuffer(buff);
+
+	if Current(rdPtr->targetId)
+		ImageChanged();
+	
+	return 0;
+}
+
+ACTION(
+	/* ID */			165,
+	/* Name */			"Apply contrast %0 to image",
+	/* Flags */			0,
+	/* Params */		(1, PARAM_NUMBER, "Contrast (1.0: No change)")
+) {
+	float contrast;
+	LoadFloat(contrast)
+	TargetExists();
+	int width = TargetImg->GetWidth();
+	int height = TargetImg->GetHeight();
+
+	//Color channel
+	BYTE* buff;
+	buff = TargetImg->LockBuffer();
+	if(!buff) return 0;
+
+	int pitch = TargetImg->GetPitch();
+	if(pitch < 0)
+	{
+		pitch *= -1;
+		buff -= pitch*(height-1);
+	}
+	int size = pitch*height;
+	int byte = TargetImg->GetDepth()>>3;
+
+	BYTE* end = buff+size;
+
+	for(BYTE* y=buff; y<end ;y+=pitch)
+	{
+		BYTE* nextline = y+pitch;
+		for(BYTE* x=y; x<nextline; x+=byte)
+		{
+			x[2] = max(0, min(255, (x[2] - 128) * contrast + 128));
+			x[1] = max(0, min(255, (x[1] - 128) * contrast + 128));
+			x[0] = max(0, min(255, (x[0] - 128) * contrast + 128));
+		}
+	}
+
+	TargetImg->UnlockBuffer(buff);
+
+	if Current(rdPtr->targetId)
+		ImageChanged();
+	
+	return 0;
+}
+ACTION(
+	/* ID */			166,
+	/* Name */			"Draw rectangle at (%0,%1) with size (%2,%3) and color %4",
+	/* Flags */			0,
+	/* Params */		(5,PARAM_NUMBER,"X",PARAM_NUMBER,"Y",PARAM_NUMBER,"Width",PARAM_NUMBER,"Height",PARAM_COLOUR,"Fill color")
+) {
+	TargetExists();
+	int x = GetXPos();
+	int y = GetYPos();
+	int w = GetInt();
+	int h = GetInt();
+	COLORREF fill = GetCol();
+	TargetImg->Rectangle(x,y,x+w,y+h,fill,0,0,TRUE);
+
+	if Current(rdPtr->targetId)
+		RectChanged(x,y,x+w,y+h);
+	
+	return 0;
+}
+ACTION(
+	/* ID */			167,
+	/* Name */			"Draw ellipse at (%0,%1) with size (%2,%3) and color %4",
+	/* Flags */			0,
+	/* Params */		(5,PARAM_NUMBER,"Center X",PARAM_NUMBER,"Center Y",PARAM_NUMBER,"Width",PARAM_NUMBER,"Height",PARAM_COLOUR,"Fill color")
+) {
+	TargetExists();
+	int x = GetXPos();
+	int y = GetYPos();
+	float w = GetInt()/2.0f; float h = GetInt()/2.0f;
+	int x1 = x-floor(w); int y1 = y-floor(h); int x2 = x+round(w)+1; int y2 = y+round(h)+1;
+	COLORREF fill = GetCol();
+
+	TargetImg->Ellipse(x1,y1,x2,y2,fill,0,0,TRUE);
+
+	if Current(rdPtr->targetId)
+		RectChanged(x1,y1,x2,y2);
+	
+	return 0;
+}
 // ============================================================================
 //
 // EXPRESSIONS
@@ -4398,7 +4726,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			1,
-	/* Name */			"EditImage(",
+	/* Name */			"SelImage(",
 	/* Flags */			0,
 	/* Params */		(0)
 ) {
@@ -4407,7 +4735,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			2,
-	/* Name */			"CurrentImage(",
+	/* Name */			"DisplayImage(",
 	/* Flags */			0,
 	/* Params */		(0)
 ) {
@@ -4471,7 +4799,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			8,
-	/* Name */			"CurrentWidth(",
+	/* Name */			"DisplayWidth(",
 	/* Flags */			0,
 	/* Params */		(0)
 ) {
@@ -4481,7 +4809,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			9,
-	/* Name */			"CurrentHeight(",
+	/* Name */			"DisplayHeight(",
 	/* Flags */			0,
 	/* Params */		(0)
 ) {
@@ -4930,7 +5258,7 @@ EXPRESSION(
 	/* ID */			42,
 	/* Name */			"FillDataColor(",
 	/* Flags */			0,
-	/* Params */		(1,EXPPARAM_STRING,"Fill data")
+	/* Params */		(1,EXPPARAM_STRING,"Pattern")
 ) {
 	string name(GetStr2());
 	FillDB::iterator it = rdPtr->fill->find(name);
@@ -4944,7 +5272,7 @@ EXPRESSION(
 	/* ID */			43,
 	/* Name */			"FillDataColorA(",
 	/* Flags */			0,
-	/* Params */		(1,EXPPARAM_STRING,"Fill data")
+	/* Params */		(1,EXPPARAM_STRING,"Pattern")
 ) {
 	string name(GetStr2());
 	FillDB::iterator it = rdPtr->fill->find(name);
@@ -4963,7 +5291,7 @@ EXPRESSION(
 	/* ID */			44,
 	/* Name */			"FillDataColorB(",
 	/* Flags */			0,
-	/* Params */		(1,EXPPARAM_STRING,"Fill data")
+	/* Params */		(1,EXPPARAM_STRING,"Pattern")
 ) {
 	string name(GetStr2());
 	FillDB::iterator it = rdPtr->fill->find(name);
@@ -4982,7 +5310,7 @@ EXPRESSION(
 	/* ID */			45,
 	/* Name */			"FillDataImage(",
 	/* Flags */			0,
-	/* Params */		(1,EXPPARAM_STRING,"Fill data")
+	/* Params */		(1,EXPPARAM_STRING,"Pattern")
 ) {
 	string name(GetStr2());
 	FillDB::iterator it = rdPtr->fill->find(name);
@@ -5098,7 +5426,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			52,
-	/* Name */			"BinaryAddr(",
+	/* Name */			"SelImgRef(",
 	/* Flags */			0,
 	/* Params */		(0)
 ) {
@@ -5108,7 +5436,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			53,
-	/* Name */			"ImgBinaryAddr(",
+	/* Name */			"ImgRef(",
 	/* Flags */			0,
 	/* Params */		(1,EXPPARAM_NUMBER,"Image")
 ) {
@@ -5137,7 +5465,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			56,
-	/* Name */			"ObjBinaryAddr(",
+	/* Name */			"ObjImgRef(",
 	/* Flags */			0,
 	/* Params */		(2,EXPPARAM_NUMBER,"Fixed value",EXPPARAM_NUMBER,"Parameter")
 ) {
@@ -5177,7 +5505,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			57,
-	/* Name */			"BackgroundBinaryAddr(",
+	/* Name */			"BgImgRef(",
 	/* Flags */			0,
 	/* Params */		(0)
 ) {

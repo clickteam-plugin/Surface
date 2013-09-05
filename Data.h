@@ -174,6 +174,8 @@ typedef struct tagRDATA
 	char*				ioFile;
 	DWORD				ioFilter;
 	HANDLE				ioHandle;
+	//Stored image for quick undo
+	cSurface*			stored;
 	
 } RUNDATA;
 typedef	RUNDATA	* LPRDATA;

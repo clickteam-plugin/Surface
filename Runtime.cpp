@@ -117,6 +117,8 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 	rdPtr->floodB = 0;
 	//I/O
 	rdPtr->ioHandle = 0;
+	//Quick store
+	rdPtr->stored = 0;
 	//Functions for extension integration
 	rdPtr->imageAt = GetImgAt;
 	rdPtr->imageCount = GetImgCount;
