@@ -77,7 +77,7 @@
 		}
 		ITEM(42,"Set use absolute coords")
 		ITEM(134,"Set keep points after drawing")
-		ITEM(135,"Set threaded file input/output")
+		ITEM(135,"Set background file input/output")
 		ITEM(81,"Set linear resampling")
 	SUB_END
 	SEPARATOR
@@ -422,8 +422,8 @@
 	SUB_END
 	SEPARATOR
 	SUB_START("Pattern")
-		ITEM(40,"Pattern from index")
 		ITEM(41,"Pattern count")
+		ITEM(40,"Pattern from index")
 		SEPARATOR
 		ITEM(42,"Color")
 		SUB_START("Linear gradient")

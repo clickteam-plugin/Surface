@@ -39,7 +39,7 @@ PROPS_DATA_START()
 	PropData_Group(PROPID_GRP0,(int)"Image bank",(int)""),
 	PropData_ImageList(PROPID_IMAGES,(int)"Images",(int)""),
 	PropData_Button(PROPID_REMOVEDEF,(int)"",(int)"",(int)"Remove"),
-	PropData_CheckBox(PROPID_MULTIIMG,(int)"Use multiple images",(int)"Actions to manage multiple images will be provided. Recommended over using multiple Surface objects	."),
+	//PropData_CheckBox(PROPID_MULTIIMG,(int)"Allow multiple images",(int)"Actions to manage multiple images will be provided. Recommended over using multiple Surface objects	."),
 	PropData_CheckBox(PROPID_LOADIMG,(int)"Load first image on start",(int)"Loads and displays image 0 if available on start."),
 	PropData_CheckBox(PROPID_SELECTLAST,(int)"Select new images",(int)"When an image is added, it is automatically selected for editing."),
 	PropData_CheckBox(PROPID_DISPTARGET,(int)"Display selected image",(int)"\"Set display image\" will not be available and the selected editing image is drawn instead."),

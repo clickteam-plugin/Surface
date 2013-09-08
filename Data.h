@@ -176,6 +176,8 @@ typedef struct tagRDATA
 	HANDLE				ioHandle;
 	//Stored image for quick undo
 	cSurface*			stored;
+	// Misc
+	int					randomSeed;
 	
 } RUNDATA;
 typedef	RUNDATA	* LPRDATA;

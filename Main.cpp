@@ -3852,9 +3852,9 @@ ACTION(
 
 ACTION(
 	/* ID */			135,
-	/* Name */			"Set threaded file input/output to %0",
+	/* Name */			"Set background file input/output to %0",
 	/* Flags */			0,
-	/* Params */		(1,PARAM_NUMBER,"Threaded file input/output? (0: No, 1: Yes)")
+	/* Params */		(1,PARAM_NUMBER,"Background file input/output? (0: No, 1: Yes)")
 ) {
 	rdPtr->threadedIO = param1;
 	return 0;
@@ -5224,7 +5224,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			40,
-	/* Name */			"FillData$(",
+	/* Name */			"Pattern$(",
 	/* Flags */			EXPFLAG_STRING,
 	/* Params */		(1,EXPPARAM_NUMBER,"Index")
 ) {
@@ -5247,7 +5247,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			41,
-	/* Name */			"FillDataCount(",
+	/* Name */			"PatternCount(",
 	/* Flags */			0,
 	/* Params */		(0)
 ) {
@@ -5256,7 +5256,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			42,
-	/* Name */			"FillDataColor(",
+	/* Name */			"PatternColor(",
 	/* Flags */			0,
 	/* Params */		(1,EXPPARAM_STRING,"Pattern")
 ) {
@@ -5270,7 +5270,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			43,
-	/* Name */			"FillDataColorA(",
+	/* Name */			"PatternColorA(",
 	/* Flags */			0,
 	/* Params */		(1,EXPPARAM_STRING,"Pattern")
 ) {
@@ -5289,7 +5289,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			44,
-	/* Name */			"FillDataColorB(",
+	/* Name */			"PatternColorB(",
 	/* Flags */			0,
 	/* Params */		(1,EXPPARAM_STRING,"Pattern")
 ) {
@@ -5308,7 +5308,7 @@ EXPRESSION(
 
 EXPRESSION(
 	/* ID */			45,
-	/* Name */			"FillDataImage(",
+	/* Name */			"PatternImage(",
 	/* Flags */			0,
 	/* Params */		(1,EXPPARAM_STRING,"Pattern")
 ) {
@@ -5418,6 +5418,7 @@ EXPRESSION(
 	/* Flags */			0,
 	/* Params */		(0)
 ) {
+	srand(rdPtr->randomSeed += rand());
 	int r = rand();
 	int g = rand();
 	int b = rand();
@@ -5729,4 +5730,18 @@ EXPRESSION(
 	int rotatedY = sin(angle)*screenX + cos(angle)*screenY;
 	rotatedY /= rdPtr->rc.rcScaleY;
 	return rotatedY;
+}
+
+EXPRESSION(
+	/* ID */			74,
+	/* Name */			"PatternType(",
+	/* Flags */			0,
+	/* Params */		(1,EXPPARAM_STRING,"Pattern")
+) {
+	string name(GetStr2());
+	FillDB::iterator it = rdPtr->fill->find(name);
+	if(it!=rdPtr->fill->end())
+		return it->second->type & (~FILL_IMAGE);
+
+	return FILL_NONE;
 }
