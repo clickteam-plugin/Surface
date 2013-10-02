@@ -3525,12 +3525,21 @@ ACTION(
 		y -= rdPtr->rHo.hoY;
 	}
 
+	// Overwrite blit position temporarily
+	int actualBlitX = rdPtr->bdX;
+	int actualBlitY = rdPtr->bdY;
+	rdPtr->bdX = x;
+	rdPtr->bdY = y;
+
 	cSurface is;
 	rdPtr->rRd->GrabSurface(obj,is);
 	Blit(&is,TargetImg,rdPtr);
 
 	if Current(rdPtr->targetId)
 		ImageChanged();
+	
+	rdPtr->bdX = actualBlitX;
+	rdPtr->bdY = actualBlitY;
 	
 	return 0;
 }
