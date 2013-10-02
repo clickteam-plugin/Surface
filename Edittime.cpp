@@ -930,18 +930,22 @@ void WINAPI DLLExport EditorDisplay(mv _far *mV, fpObjInfo oiPtr, fpLevObj loPtr
 		if(edPtr->loadFirst&&!edPtr->images[0])
 		{
 			//Create tile
+			cSurface* proto;
+			GetSurfacePrototype(&proto, 24, ST_MEMORY, SD_DIB);
 			cSurface tile;
-			tile.Create(16,16,ps);
+			tile.Create(16,16, proto);
 			tile.Fill(LIGHT_GRAY);
 			tile.Rectangle(0,0,8,8,DARK_GRAY,0,0,TRUE);
 			tile.Rectangle(16,16,8,8,DARK_GRAY,0,0,TRUE);
 			CFillMosaic mosaic(&tile);
+			CFillFlat light(LIGHT_GRAY);
+			CFillFlat dark(DARK_GRAY);
 			CFillFlat outline(BLACK);
 			//Draw shapes
-			ps->Rectangle(rc->left,rc->top,rc->right,rc->bottom,&mosaic,1,&outline,0,BMODE_TRANSP,BOP_BLEND,32);
+			ps->Rectangle(rc->left, rc->top, rc->right, rc->bottom, &mosaic, 1, &outline, 0, BMODE_TRANSP, BOP_BLEND, 32);
 			//Icon
-			if(rc->right-rc->left>=32&&rc->bottom-rc->top>=32)
-				is.Blit(*ps,(rc->right+rc->left)/2-16,(rc->bottom+rc->top)/2-16,BMODE_TRANSP);
+			if(rc->right - rc->left >=32 && rc->bottom - rc->top >= 32)
+				is.Blit(*ps, (rc->right + rc->left)/2 - 16, (rc->bottom + rc->top)/2 - 16, BMODE_TRANSP);
 		}
 		//Icon only
 		else
