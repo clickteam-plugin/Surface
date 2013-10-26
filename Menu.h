@@ -203,8 +203,8 @@
 		ITEM(47,"Load from clipboard")
 		ITEM(48,"Save to clipboard")
 		SEPARATOR
-		ITEM(163, "Restore")
-		ITEM(162, "Store")
+		ITEM(163, "Quick restore")
+		ITEM(162, "Quick store")
 		SEPARATOR
 		SUB_START("Advanced")
 			ITEM(68,"Export as Overlay")
@@ -219,7 +219,7 @@
 		ITEM(164, "Apply brightness")
 		ITEM(165, "Apply contrast")
 		ITEM(98,"Invert colors")
-		ITEM(166, "Normalize")
+		//ITEM(166, "Normalize")
 		SUB_START("Perform operation")
 			ITEM(26,"With color for RGB")
 			ITEM(123,"With value for...")

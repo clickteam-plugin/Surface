@@ -2127,6 +2127,10 @@ ACTION(
 
 		if(fillData->type==FILL_COLOR)
 			((CFillFlat*)fillData->fill)->SetColor(color);
+		else if(fillData->type==FILL_GRADIENT)
+			((CFillDir*)fillData->fill)->SetColors(color,color);
+		else if(fillData->type==FILL_RADIAL)
+			((CFillRadial*)fillData->fill)->SetColors(color,color);
 	}
 
 	return 0;
@@ -2150,6 +2154,8 @@ ACTION(
 			((CFillDir*)fillData->fill)->SetColors(a,b);
 		else if(fillData->type==FILL_RADIAL)
 			((CFillRadial*)fillData->fill)->SetColors(a,b);
+		else if(fillData->type==FILL_COLOR)
+			((CFillFlat*)fillData->fill)->SetColor(a);
 	}
 
 	return 0;
