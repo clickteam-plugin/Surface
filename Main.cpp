@@ -1790,9 +1790,9 @@ ACTION(
 				filter[x][y][i] = TOFIX(i*ff[x][y]);
 
 	// Build input->output table
-	static BYTE convert[0x1000];
-	for(int i = 0; i < 0x1000; ++i)
-		convert[i] = max(0, min(255, TOFIX(i)/div + off));
+	static BYTE convert[0x2000];
+	for(int i = 0; i < 0x2000; ++i)
+		convert[i] = max(0, min(255, TOFIX(i - 0x1000)/div + off));
 
 	//Dimensions
 	int width = TargetImg->GetWidth(), height = TargetImg->GetHeight();
@@ -1854,9 +1854,9 @@ ACTION(
 				}
 
 				offset = y*pitch+x*byte;
-				buff[offset+2] = convert[TOINT(nr)];
-				buff[offset+1] = convert[TOINT(ng)];
-				buff[offset+0] = convert[TOINT(nb)];
+				buff[offset+2] = convert[TOINT(nr) + 0x1000];
+				buff[offset+1] = convert[TOINT(ng) + 0x1000];
+				buff[offset+0] = convert[TOINT(nb) + 0x1000];
 			}
 		}
 		if(iterations > 1 && loop + 1 < iterations)
@@ -4595,7 +4595,7 @@ ACTION(
 	/* ID */			164,
 	/* Name */			"Apply brightness %0 to image",
 	/* Flags */			0,
-	/* Params */		(1, PARAM_NUMBER, "Brightness (1.0: No change)")
+	/* Params */		(1, PARAM_NUMBER, "Brightness (0.0: No change, 1.0: Entire image will be white)")
 ) {
 	float brightness;
 	LoadFloat(brightness)
