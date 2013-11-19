@@ -36,18 +36,18 @@ PROPS_IDS_START()
 PROPS_IDS_END()
 
 PROPS_DATA_START()
-	PropData_Group(PROPID_GRP0,(int)"Image bank",(int)""),
-	PropData_ImageList(PROPID_IMAGES,(int)"Images",(int)""),
-	PropData_Button(PROPID_REMOVEDEF,(int)"",(int)"",(int)"Remove"),
-	//PropData_CheckBox(PROPID_MULTIIMG,(int)"Allow multiple images",(int)"Actions to manage multiple images will be provided. Recommended over using multiple Surface objects	."),
-	PropData_CheckBox(PROPID_LOADIMG,(int)"Load first image on start",(int)"Loads and displays image 0 if available on start."),
-	PropData_CheckBox(PROPID_SELECTLAST,(int)"Select new images",(int)"When an image is added, it is automatically selected for editing."),
-	PropData_CheckBox(PROPID_DISPTARGET,(int)"Display selected image",(int)"\"Set display image\" will not be available and the selected editing image is drawn instead."),
-	PropData_Group(PROPID_GRP1,(int)"Settings",(int)""),
-	PropData_CheckBox(PROPID_USEABS,(int)"Use absolute coordinates",(int)"Coordinates are not relative to the surface position."),
-	PropData_CheckBox(PROPID_KEEPPOINTS,(int)"Keep polygon points after drawing",(int)"The polygon points will be kept after drawing one."),
-	PropData_CheckBox(PROPID_THREADEDIO,(int)"Background file input/output",(int)"If checked, the application does not freeze while a file is being loaded or saved."),
-	PropData_CheckBox(PROPID_RESAMPLING,(int)"Linear resampling for transformations",(int)"Some actions like \"Resize\" and \"Rotate\" can achieve better quality with this option."),
+	PropData_Group(PROPID_GRP0,(int)_T("Image bank"),(int)_T("")),
+	PropData_ImageList(PROPID_IMAGES,(int)_T("Images"),(int)_T("")),
+	PropData_Button(PROPID_REMOVEDEF,(int)_T(""),(int)_T(""),(int)_T("Remove")),
+	//PropData_CheckBox(PROPID_MULTIIMG,(int)_T("Allow multiple images"),(int)_T("Actions to manage multiple images will be provided. Recommended over using multiple Surface objects	.")),
+	PropData_CheckBox(PROPID_LOADIMG,(int)_T("Load first image on start"),(int)_T("Loads and displays image 0 if available on start.")),
+	PropData_CheckBox(PROPID_SELECTLAST,(int)_T("Select new images"),(int)_T("When an image is added, it is automatically selected for editing.")),
+	PropData_CheckBox(PROPID_DISPTARGET,(int)_T("Display selected image"),(int)_T("\"Set display image\" will not be available and the selected editing image is drawn instead.")),
+	PropData_Group(PROPID_GRP1,(int)_T("Settings"),(int)_T("")),
+	PropData_CheckBox(PROPID_USEABS,(int)_T("Use absolute coordinates"),(int)_T("Coordinates are not relative to the surface position.")),
+	PropData_CheckBox(PROPID_KEEPPOINTS,(int)_T("Keep polygon points after drawing"),(int)_T("The polygon points will be kept after drawing one.")),
+	PropData_CheckBox(PROPID_THREADEDIO,(int)_T("Background file input/output"),(int)_T("If checked, the application does not freeze while a file is being loaded or saved.")),
+	PropData_CheckBox(PROPID_RESAMPLING,(int)_T("Linear resampling for transformations"),(int)_T("Some actions like \"Resize\" and \"Rotate\" can achieve better quality with this option.")),
 PROPS_DATA_END()
 
 TCHAR* FontQuality[] =
@@ -60,10 +60,10 @@ TCHAR* FontQuality[] =
 };
 
 PropData FontProps[] = {
-	PropData_CheckBox(PROPID_TEXT_MULTILINE,(int)"Multi-line",(int)"If checked, line breaks will be rendered, but vertical alignment is not supported."),
-	PropData_CheckBox(PROPID_TEXT_NOCLIP,(int)"No text clipping",(int)"If checked, the text won't be clipped if it exceeds the given rectangle."),
-	PropData_CheckBox(PROPID_TEXT_WORDELLIPSIS,(int)"Add ellipsis",(int)"Truncates any word that does not fit in the rectangle and adds an ellipsis."),
-	PropData_CheckBox(PROPID_TEXT_WORDBREAK,(int)"Break words",(int)"Break words that don't fit in the rectangle."),
+	PropData_CheckBox(PROPID_TEXT_MULTILINE,(int)_T("Multi-line"),(int)_T("If checked, line breaks will be rendered, but vertical alignment is not supported.")),
+	PropData_CheckBox(PROPID_TEXT_NOCLIP,(int)_T("No text clipping"),(int)_T("If checked, the text won't be clipped if it exceeds the given rectangle.")),
+	PropData_CheckBox(PROPID_TEXT_WORDELLIPSIS,(int)_T("Add ellipsis"),(int)_T("Truncates any word that does not fit in the rectangle and adds an ellipsis.")),
+	PropData_CheckBox(PROPID_TEXT_WORDBREAK,(int)_T("Break words"),(int)_T("Break words that don't fit in the rectangle.")),
 	PropData_End()
 };
 
