@@ -201,32 +201,32 @@ void WINAPI DLLExport UnloadObject(mv _far *mV, LPEDATA edPtr, int reserved)
 
 HGLOBAL WINAPI DLLExport UpdateEditStructure(mv __far *mV, void __far * OldEdPtr)
 {
-	//HGLOBAL hgNew = NULL;
-	//EDITDATA1* oldPtr = (EDITDATA1*)OldEdPtr;
+#ifdef UNICODE
 
-	////Update version 2
-	//if(oldPtr->eHeader.extVersion == 1)
-	//{
-	//	
-	//	EDITDATA* edPtr;
-	//	if(hgNew = GlobalAlloc(GPTR,sizeof EDITDATA))
-	//	{
-	//		//Update pointer
-	//		edPtr = (EDITDATA*)GlobalLock(hgNew);
-	//		memcpy(&edPtr->eHeader,&oldPtr->eHeader,sizeof extHeader);
-	//		edPtr->eHeader.extVersion = 2;
-	//		edPtr->eHeader.extSize = sizeof EDITDATA;
+	// Update ANSI to Unicode EDITDATA
+	if (!mvIsUnicodeApp(mV, mV->mvEditApp))
+	{
+		if(HGLOBAL hgNew = GlobalAlloc(GPTR, sizeof(EDITDATAW)))
+		{
+			EDITDATAA* ansiPtr = (EDITDATAA*)OldEdPtr;
+			EDITDATAW* edPtr = (EDITDATA*)GlobalLock(hgNew);
+			memcpy(&edPtr->eHeader, &ansiPtr->eHeader, sizeof(extHeader));
+			edPtr->eHeader.extVersion = ObjectVersion;
+			edPtr->eHeader.extSize = sizeof(EDITDATAW);
+	
+			// Copy non-text stuff
+			memcpy(&edPtr->width, &ansiPtr->width, (size_t)&ansiPtr->textFont.lfFaceName[0] - (size_t)&ansiPtr->width);
+			edPtr->textColor = ansiPtr->textColor;
+			edPtr->textFlags = ansiPtr->textFlags;
 
-	//		//Initialize images to 0
-	//		memset(&edPtr->images,0,MAX_IMAGES);
-	//		//Width, height, 16 old images
-	//		memcpy(&edPtr->width,&oldPtr->width,sizeof(short)*(4+16));
-	//		//Other settings
-	//		memcpy(&edPtr->imageCount,&oldPtr->imageCount,sizeof(short)+sizeof(bool)*7+sizeof(DWORD)*3);
+			// Convert font face
+			MultiByteToWideChar(mvGetAppCodePage(mV, mV->mvEditApp), 0, ansiPtr->textFont.lfFaceName, -1, edPtr->textFont.lfFaceName, LF_FACESIZE);
 
-	//		GlobalUnlock(hgNew);
-	//	}
-	//}
+			GlobalUnlock(hgNew);
+			return (HGLOBAL)hgNew;
+		}
+	}
+#endif
 
 	return 0;
 }
