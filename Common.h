@@ -21,8 +21,20 @@
 #include	<vector>
 #include	<map>
 #include	<iostream>
-using namespace std;
+using std::vector;
+using std::map;
+using std::cin;
+using std::cout;
+using std::pair;
+using std::swap;
 #include	<time.h>
+
+#ifdef UNICODE
+using std::wstring;
+typedef wstring string;
+#else
+using std::string;
+#endif
 
 // Specific to this extension
 #include	"Resource.h"
@@ -35,8 +47,8 @@ using namespace std;
 
 WORD CreateImageFromSurface(LPMV pMV, LPSURFACE pSf, int dwWidth, int dwHeight, int hotSpotX, int hotSpotY, int actionPointX, int actionPointY);
 //BOOL WINAPI ExportSurface (CImageFilterMgr* pImgMgr, LPCSTR pFileName, cSurface* psf, DWORD dwFilterID, int compress);
-inline const char * GetExtension(const char * Filename);
-DWORD FindFilter(CImageFilterMgr* pImgMgr,char* file,bool isext = false);
+const TCHAR * GetExtension(const TCHAR * Filename);
+DWORD FindFilter(CImageFilterMgr* pImgMgr,TCHAR* file,bool isext = false);
 int GetImgCount(RUNDATA* rdPtr);
 cSurface* GetImgAt(RUNDATA* rdPtr,int image);
 bool CreateFillData(RUNDATA* rdPtr,string name,CFillData* fill,int type,int param);
@@ -87,7 +99,7 @@ void UpdateHotspot(LPRDATA rdPtr);
 
 #define GetInt() CNC_GetIntParameter(rdPtr)
 #define GetParam() CNC_GetParameter(rdPtr)
-#define GetStr() (char*)CNC_GetStringParameter(rdPtr)
+#define GetStr() (TCHAR*)CNC_GetStringParameter(rdPtr)
 #define GetXPos() CNC_GetIntParameter(rdPtr)-(rdPtr->useAbs?(rdPtr->rHo.hoRect.left+rdPtr->rHo.hoAdRunHeader->rhWindowX):0)
 #define GetYPos() CNC_GetIntParameter(rdPtr)-(rdPtr->useAbs?(rdPtr->rHo.hoRect.top+rdPtr->rHo.hoAdRunHeader->rhWindowY):0)
 #define GetCol() Param(TYPE_GENERIC)//GetColorInline(rdPtr)//GetColorInline(rdPtr)
@@ -101,7 +113,7 @@ inline COLORREF GetColorInline(LPRDATA rdPtr)
 #define GetInt2() ExParam(TYPE_INT)
 #define GetXPos2() ExParam(TYPE_INT)-(rdPtr->useAbs?(rdPtr->rHo.hoRect.left+rdPtr->rHo.hoAdRunHeader->rhWindowX):0)
 #define GetYPos2() ExParam(TYPE_INT)-(rdPtr->useAbs?(rdPtr->rHo.hoRect.top+rdPtr->rHo.hoAdRunHeader->rhWindowY):0)
-#define GetStr2() (char*)ExParam(TYPE_STRING)
+#define GetStr2() (TCHAR*)ExParam(TYPE_STRING)
 
 __inline int round(float fl)
 {

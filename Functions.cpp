@@ -824,7 +824,7 @@ WORD CreateImageFromSurface(LPMV pMV, LPSURFACE pSf, int dwWidth, int dwHeight, 
 //        if ( pSaveSf->HasAlpha() ) 
 //        { 
 //            pAlpha = pSaveSf->LockAlpha(); 
-//            nAlphaPitch = pSaveSf->GetAlphaPitch(); 
+//            nAlphaPitch = pSaveSf->GetAlphaPitch();	
 //        }
 //		pFilter.SetCompressionLevel(compress);
 //        int error = pFilter.Save(pFileName, pbuf, nWidth, nHeight, nDepth, pSaveSf->GetPitch(), (LPLOGPALETTE)pSaveSf->GetPalette(), pAlpha, nAlphaPitch); 
@@ -844,61 +844,25 @@ WORD CreateImageFromSurface(LPMV pMV, LPSURFACE pSf, int dwWidth, int dwHeight, 
 //    return bOK; 
 //}
 
-inline const char * GetExtension(const char * Filename)
+const TCHAR * GetExtension(const TCHAR* Filename)
 {
-	const char * Extension = (Filename + strlen(Filename)) - 1;
+	const TCHAR * Extension = (Filename + _tcslen(Filename)) - 1;
 	for(; Extension != Filename && *Extension != '.'; --Extension);
 	return ++Extension;
 }
 
-__declspec(naked) unsigned int HexToRGB(const char * Hex)
-{
-	__asm
-	{
-		mov eax, [esp + 4]
-
-		cmp byte ptr[eax], '#'
-		je short Increment;
-		
-		jmp short Convert;
-
-	Increment:
-
-		inc eax;
-
-	Convert:
-
-		push 16;
-		push 0;
-		push eax;
-
-		call strtoul;
-
-		add esp, 12;
-
-		mov bh, al;
-		bswap eax;
-		mov bl, ah;
-		mov ah, bh;
-		bswap eax;
-		mov al, bl;
-
-		retn;
-	};
-}
-
-DWORD FindFilter(CImageFilterMgr* pImgMgr,char* file,bool isext)
+DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 {
 	//Get filter by extension
-	const char* ext = isext ? file : GetExtension(file);
+	const TCHAR* ext = isext ? file : GetExtension(file);
 	DWORD filter = 0;
 	for(int i=0;i<pImgMgr->GetFilterCount();++i)
 	{
-		const char** exts = pImgMgr->GetFilterExts(i);
+		const TCHAR** exts = pImgMgr->GetFilterExts(i);
 		if(exts == 0) break;
 		for(int j=0;exts[j];j++)
 		{
-			if(!stricmp(exts[j],ext))
+			if(!_tcsicmp(exts[j],ext))
 			{
 				filter = pImgMgr->GetFilterID(i);
 				break;

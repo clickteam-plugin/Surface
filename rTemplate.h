@@ -107,9 +107,9 @@ public:
 #endif
 
 // Some of the menu macros (the rest are specific to actions/conditions/expressions)
-#define SUB_START(string)			m.AddMenu(SubMenu,string);
-#define SUB_END						m.AddMenu(MenuItem,"");
-#define SEPARATOR					m.AddMenu(-3,"");
+#define SUB_START(string)			m.AddMenu(SubMenu,_T(string));
+#define SUB_END						m.AddMenu(MenuItem,_T(""));
+#define SEPARATOR					m.AddMenu(-3,_T(""));
 
 // Should be placed globally in some CPP file
 #define EXT_INIT()					rVector<ExtFunction*> Conditions; \
@@ -139,8 +139,8 @@ public:
 #define ReturnBool(b)				return b;
 
 // Safe return of a string- returns a copy
-#define ReturnStringSafe(str)		int SVAR(1)=strlen(str)+1; \
-									char * SVAR(2)=rdPtr->rRd->GetStringSpace(SVAR(1)); \
+#define ReturnStringSafe(str)		int SVAR(1)=sizeof(TCHAR)*(_tcslen(str)+1); \
+									TCHAR * SVAR(2)= (TCHAR*)rdPtr->rRd->GetStringSpace(SVAR(1)); \
 									memcpy(SVAR(2),str,SVAR(1)); \
 									rdPtr->rHo.hoFlags|=HOF_STRING; \
 									return long(SVAR(2))
@@ -214,7 +214,7 @@ public:
 			else
 
 				// It must be a name; push it onto the names vector
-				Name.push_back(va_arg(list,const char *));
+				Name.push_back(va_arg(list,const TCHAR *));
 		}
 
 		// Stop going through the arguments
@@ -225,7 +225,7 @@ public:
 	rVector<short> Type;
 
 	// This will hold the name of each argument
-	rVector<const char *> Name;
+	rVector<const TCHAR *> Name;
 };
 
 // Temporary declaration of the ExtFunction class
@@ -244,7 +244,7 @@ protected:
 	rVector<short> ParamTypes;
 
 	// A vector to hold the names of the parameters
-	rVector<const char *> ParamStrings;
+	rVector<const TCHAR *> ParamStrings;
 
 	// Pointers to conditions, actions and expressions- we have them all but don't use them all
 	LPCONDITION mCondition;
@@ -252,7 +252,7 @@ protected:
 	LPEXPRESSION mExpression;
 
 	// The name of the function
-	const char * Name;
+	const TCHAR * Name;
 
 	// The flags
 	short Flags;
@@ -260,7 +260,7 @@ protected:
 public:
 
 	// The first constructor overload, for a condition
-	ExtFunction(LPCONDITION con,short flags,const char * name,param_list params) {
+	ExtFunction(LPCONDITION con,short flags,const TCHAR * name,param_list params) {
 
 		// Set the condition pointer
 		mCondition=con;
@@ -278,7 +278,7 @@ public:
 	}
 
 	// Constructor overload for an action
-	ExtFunction(LPACTION act,short flags,const char * name,param_list params) {
+	ExtFunction(LPACTION act,short flags,const TCHAR * name,param_list params) {
 
 		// Set the action pointer
 		mAction=act;
@@ -296,7 +296,7 @@ public:
 	}
 
 	// Constructor overload for an expression
-	ExtFunction(LPEXPRESSION exp,short flags,const char * name,param_list params) {
+	ExtFunction(LPEXPRESSION exp,short flags,const TCHAR * name,param_list params) {
 
 		// Set the expression pointer
 		mExpression=exp;
@@ -317,10 +317,10 @@ public:
 	inline LPCONDITION		getCondition()			{ return mCondition; }
 	inline LPACTION			getAction()				{ return mAction; }
 	inline LPEXPRESSION		getExpression()			{ return mExpression; }
-	inline const char *		getName()				{ return Name; }
+	inline const TCHAR *		getName()				{ return Name; }
 	inline size_t			getParamCount()			{ return ParamTypes.size(); }
 	inline short			getParamType(size_t i)	{ return ParamTypes[i]; }
-	inline const char *		getParamName(size_t i)	{ return ParamStrings[i]; }
+	inline const TCHAR *		getParamName(size_t i)	{ return ParamStrings[i]; }
 	inline short			getFlags()				{ return Flags; }
 };
 
@@ -383,7 +383,7 @@ const int Separator=-3;
 	private:
 		HMENU RootMenu;
 		rVector<HMENU> SubMenus;
-		rVector<const char *> SubMenuNames;
+		rVector<const TCHAR *> SubMenuNames;
 	public:
 
 		// The constructor creates a root menu and pushes it onto the submenu vector
@@ -392,7 +392,7 @@ const int Separator=-3;
 			SubMenus.push_back(RootMenu);
 		}
 		
-		void AddMenu(int id,const char * str,bool disabled=false) {
+		void AddMenu(int id,const TCHAR * str,bool disabled=false) {
 			if(id>0) {
 				AppendMenu(SubMenus.back(),MF_BYPOSITION|MF_STRING,id,str);
 			} else if(id==SubMenu) {
@@ -417,8 +417,8 @@ const int Separator=-3;
 
 	inline HMENU ConditionMenu(LPEDATA edPtr) {	
 		#define	CONDITION_MENU
-		#define	ITEM(id,string)	m.AddMenu(CONDITION_ID(id),string);
-		#define	DISABLED(id,string)	m.AddMenu(CONDITION_ID(id),string,true);	
+		#define	ITEM(id,string)	m.AddMenu(CONDITION_ID(id),_T(string));
+		#define	DISABLED(id,string)	m.AddMenu(CONDITION_ID(id),_T(string),true);	
 		Menu m;
 		#include "menu.h"
 		return m.GetMenu();
@@ -429,8 +429,8 @@ const int Separator=-3;
 
 	inline HMENU ActionMenu(LPEDATA edPtr) {
 		#define	ACTION_MENU
-		#define	ITEM(id,string)	m.AddMenu(ACTION_ID(id),string);
-		#define	DISABLED(id,string)	m.AddMenu(ACTION_ID(id),string,true);
+		#define	ITEM(id,string)	m.AddMenu(ACTION_ID(id),_T(string));
+		#define	DISABLED(id,string)	m.AddMenu(ACTION_ID(id),_T(string),true);
 		Menu m;
 		#include "menu.h"
 		return m.GetMenu();
@@ -441,8 +441,8 @@ const int Separator=-3;
 
 	inline HMENU ExpressionMenu(LPEDATA edPtr) {
 		#define	EXPRESSION_MENU
-		#define	ITEM(id,string)	m.AddMenu(EXPRESSION_ID(id),string);
-		#define	DISABLED(id,string)	m.AddMenu(EXPRESSION_ID(id),string,true);
+		#define	ITEM(id,string)	m.AddMenu(EXPRESSION_ID(id),_T(string));
+		#define	DISABLED(id,string)	m.AddMenu(EXPRESSION_ID(id),_T(string),true);
 		Menu m;
 		#include "menu.h"
 		return m.GetMenu();
@@ -529,8 +529,8 @@ public:
 	}
 
 	// Allocate some space to store a string
-	inline char * GetStringSpace(size_t size) {
-		return (char *)callRunTimeFunction(rdPtr,RFUNCTION_GETSTRINGSPACE_EX,0,size);
+	inline TCHAR * GetStringSpace(size_t size) {
+		return (TCHAR *)callRunTimeFunction(rdPtr,RFUNCTION_GETSTRINGSPACE_EX,0,size*sizeof(TCHAR));
 	}
 
 	// Pause the application before a lengthy task, without messing up timers etc.
@@ -549,22 +549,22 @@ public:
 	}
 
 	// Get the drive of the application
-	inline void GetApplicationDrive(char * buf) {
+	inline void GetApplicationDrive(TCHAR * buf) {
 		CallFunction(RFUNCTION_GETFILEINFOS,FILEINFO_DRIVE,(long)buf);
 	}
 
 	// Get the directory of the application
-	inline void GetApplicationDirectory(char * buf) {
+	inline void GetApplicationDirectory(TCHAR * buf) {
 		CallFunction(RFUNCTION_GETFILEINFOS,FILEINFO_DIR,(long)buf);
 	}
 
 	// Get the complete path of the application
-	inline void GetApplicationPath(char * buf) {
+	inline void GetApplicationPath(TCHAR * buf) {
 		CallFunction(RFUNCTION_GETFILEINFOS,FILEINFO_PATH,(long)buf);
 	}
 
 	// Get the application name
-	inline void GetApplicationName(char * buf) {
+	inline void GetApplicationName(TCHAR * buf) {
 		CallFunction(RFUNCTION_GETFILEINFOS,FILEINFO_APPNAME,(long)buf);
 	}
 

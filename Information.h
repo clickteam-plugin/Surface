@@ -6,8 +6,8 @@
 #define	ObjectName			"Surface"
 #define	ObjectAuthor		"Looki"
 #define	ObjectCopyright		"Copyright © 2013 Looki"
-#define	ObjectComment		"An editable canvas much like Overlay Redux, but with support for multiple images, alpha channels and more. Thanks to Greyhill for the icon."
-#define	ObjectURL			"http://www.aquadasoft.com"
+#define	ObjectComment		"Flexible pixel canvas for image manipulation and complex effects"
+#define	ObjectURL			""
 #define	ObjectHelp			"Help\\Surface.chm"
 
 // If you register your object with Clickteam, change this to the ID you were given
@@ -26,7 +26,7 @@
 #define ForVersion			PRODUCT_VERSION_STANDARD
 
 // Set this to the latest MMF build out when you build the object
-#define	MinimumBuild		251
+#define	MinimumBuild		280
 
 // --------------------
 // Beta information

@@ -33,6 +33,9 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 	freopen("conin$","r",stdin);
 	freopen("conout$","w",stdout);
 	freopen("conout$","w",stderr);
+#ifdef UNICODE
+	printf("Surface Unicode version\n");
+#endif
 #endif
 
 	LPRH rhPtr = rdPtr->rHo.hoAdRunHeader;
@@ -45,6 +48,7 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 	rdPtr->dispTarget = edPtr->dispTarget;
 	rdPtr->selectLast = edPtr->selectLast;
 	rdPtr->threadedIO = edPtr->threadedIO;
+	rdPtr->ioFile = 0;
 
 	//Font
 	rdPtr->hFont = 0;

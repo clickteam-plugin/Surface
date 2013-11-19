@@ -124,7 +124,7 @@ typedef struct tagRDATA
 	bool				bsRegion;
 	int					bAngle;
 	bool				bAngleResample;
-	char*				bCallback;
+	TCHAR*				bCallback;
 	char*				bProcOp;
 	float				bProcOpSrc;
 	bool				bAlphaCompose;
@@ -140,7 +140,7 @@ typedef struct tagRDATA
 	int					colAlphaNew;
 	bool				colRet;
 	bool				colAlphaRet;
-	char*				callback;
+	TCHAR*				callback;
 	int					callX;
 	int					callY;
 	//Data
@@ -171,7 +171,7 @@ typedef struct tagRDATA
 	int					floodT;
 	int					floodB;
 	//I/O stuff
-	char*				ioFile;
+	TCHAR*				ioFile;
 	DWORD				ioFilter;
 	HANDLE				ioHandle;
 	//Stored image for quick undo
@@ -236,7 +236,7 @@ typedef struct
 // These values let you store data in your extension that will be saved in the MFA
 // You should use these with properties
 
-typedef struct tagEDATA_V1
+typedef struct tagEDATAA_V1
 {
 	extHeader		eHeader;
 	//Image bank
@@ -255,13 +255,47 @@ typedef struct tagEDATA_V1
 	bool			dispTarget;
 	bool			selectLast;
 
-	LOGFONT			textFont;
+	LOGFONTA		textFont;
 	COLORREF		textColor;
 	DWORD			textFlags;
 
-} EDITDATA;
+} EDITDATAA;
+
+typedef struct tagEDATAW_V1
+{
+	extHeader		eHeader;
+	//Image bank
+	short			width;
+	short			height;
+	short			width_def; //Width & height of the default image
+	short			height_def;
+	WORD			images[MAX_IMAGES];
+	short			imageCount;
+
+	bool			loadFirst;
+	bool			useAbs;
+	bool			threadedIO;
+	bool			keepPoints;
+	bool			multiImg;
+	bool			dispTarget;
+	bool			selectLast;
+
+	LOGFONTW		textFont;
+	COLORREF		textColor;
+	DWORD			textFlags;
+
+} EDITDATAW;
+
+#ifdef _UNICODE
+#define EDITDATA	EDITDATAW
+#define LPEDATA		LPEDATAW
+#else
+#define EDITDATA	EDITDATAA
+#define LPEDATA		LPEDATAA
+#endif
 
 typedef EDITDATA * LPEDATA;
+
 
 struct OvlStruct
 {
@@ -407,10 +441,10 @@ class CFillUser : public CFillData
 {
 public:
 	RUNDATA*	rdPtr;
-	char*	fillName;
+	TCHAR*	fillName;
 
 public:
-	CFillUser(RUNDATA* __rdPtr,const char* name);
+	CFillUser(RUNDATA* __rdPtr,const TCHAR* name);
 	~CFillUser();
 	virtual BOOL Fill(cSurface FAR * pSf, int l, int t, int r, int b, BOOL bForceOpaqueBlack=FALSE);
 };

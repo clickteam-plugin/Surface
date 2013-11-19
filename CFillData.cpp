@@ -2,9 +2,9 @@
 
 /* CALLBACK */
 
-CFillUser::CFillUser(RUNDATA* __rdPtr, const char* name)
+CFillUser::CFillUser(RUNDATA* __rdPtr, const TCHAR* name)
 {
-	fillName = strdup(name);
+	fillName = _tcsdup(name);
 	rdPtr = __rdPtr;
 }
 

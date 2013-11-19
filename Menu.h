@@ -1,5 +1,4 @@
 #define ITEM_MULTIPLEIMG	ITEM(-1,"(Enable multiple images)")
-#define CATEGORY(x) ITEM(0, "~" x)
 
 //:-------------------------------
 // Condition menu
@@ -180,7 +179,7 @@
 		ITEM(86,"Set word break")
 	SUB_END
 	SEPARATOR
-	CATEGORY("- Selected image -")
+	ITEM(0,"~- Selected image -")
 	SUB_START("Settings")
 		ITEM(24,"Set transparent color")
 		SEPARATOR
@@ -214,7 +213,7 @@
 			ITEM(128,"Write bytes")
 		SUB_END
 	SUB_END
-	CATEGORY("- Pixel processing -")
+	ITEM(0,"~- Pixel processing -")
 	SUB_START("Adjustments")
 		ITEM(164, "Apply brightness")
 		ITEM(165, "Apply contrast")
@@ -294,7 +293,7 @@
 			SUB_END
 		SUB_END
 		SEPARATOR
-		CATEGORY("- Position && Size -")
+		ITEM(0,"~- Position && Size -")
 		SUB_START("Destination")
 			ITEM(41,"Set position")
 			ITEM(66,"Set dimensions")
@@ -343,7 +342,7 @@
 		//SEPARATOR
 		//ITEM(153,"Loop through image with condition")
 		SEPARATOR
-		CATEGORY("On callback:")
+		ITEM(0,"~On callback:")
 		ITEM(138,"Return alpha")
 		ITEM(94,"Return color")
 	SUB_END
@@ -358,7 +357,7 @@
 		ITEM(22,"Reverse Y")
 		ITEM(93,"Scroll")
 	SUB_END
-	CATEGORY("- Drawing -")
+	ITEM(0,"~- Drawing -")
 	SUB_START("With color")
 		ITEM(3,"Clear")
 		ITEM(2,"Set pixel")
@@ -367,20 +366,20 @@
 		SEPARATOR
 		ITEM(10,"Draw line")
 		SUB_START("Draw rectangle")
-			CATEGORY("Simple:")
+			ITEM(0,"~Simple:")
 			ITEM(9,"Via bounding box")
 			ITEM(119,"Via position and size")
 			SEPARATOR
-			CATEGORY("With outline:")
+			ITEM(0,"~With outline:")
 			ITEM(159,"Via bounding box")
 			ITEM(166,"Via position and size")
 		SUB_END
 		SUB_START("Draw ellipse")
-			CATEGORY("Simple:")
+			ITEM(0,"~Simple:")
 			ITEM(8,"Via bounding box")
 			ITEM(101,"Via center and size")
 			SEPARATOR
-			CATEGORY("With outline:")
+			ITEM(0,"~With outline:")
 			ITEM(158,"Via bounding box")
 			ITEM(167,"Via center and size")
 		SUB_END
@@ -541,6 +540,10 @@
 		ITEM(67,"Subtract two colors")
 		ITEM(26,"Multiply two colors")
 		ITEM(24,"Blend two colors")
+		SUB_START("Compose two colors")
+			ITEM(75, "Composed color")
+			ITEM(76, "Composed alpha")
+		SUB_END
 	SUB_END
 	SUB_START("Image references")
 		ITEM(68,"Transformed Surface")

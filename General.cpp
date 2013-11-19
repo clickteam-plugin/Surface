@@ -104,6 +104,12 @@ extern "C"
 				return ForVersion;
 			case KGI_BUILD:
 				return MinimumBuild;
+			case KGI_UNICODE:
+				#ifdef _UNICODE
+					return TRUE;
+				#else
+					return FALSE;
+				#endif
 			default:
 				return 0;
 		}
