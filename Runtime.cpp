@@ -266,9 +266,8 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 		rdPtr->rHo.hoImgYSpot = ImageS(rdPtr->currentId)->hotY;
 	}
 
-
 	// No errors
-	return 0;
+		return 0;
 }
 
 // ----------------
@@ -439,11 +438,9 @@ short WINAPI DLLExport DisplayRunObject(LPRDATA rdPtr)
 	{
 		cSurface rotateBuffer;
 		rotateBuffer.Clone(*renderImage);
-		printf("DRO: Scaled: %d,%d\n", renderImage->GetWidth(), renderImage->GetHeight());
 		rotateBuffer.CreateRotatedSurface(temp, rdPtr->rc.rcAngle, 
 			rdPtr->rs.rsFlags & RSFLAG_ROTATE_ANTIA, CurrentImg->GetTransparentColor(), TRUE);
 		renderImage = &temp;
-		printf("DRO: Rotated: %d,%d\n", renderImage->GetWidth(), renderImage->GetHeight());
 	}
 
 	if (renderImage && renderImage->IsValid())

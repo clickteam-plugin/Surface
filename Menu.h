@@ -247,7 +247,7 @@
 		SUB_START("From...")
 			if(!edPtr||edPtr->multiImg)
 			{
-				SUB_START("Onto the alpha channel")
+				SUB_START("From alpha channel")
 					ITEM(125,"Alpha channel")
 				SUB_END
 				SEPARATOR
@@ -272,7 +272,7 @@
 		SUB_START("Onto...")
 			if(!edPtr||edPtr->multiImg)
 			{
-				SUB_START("From the alpha channel")
+				SUB_START("Onto alpha channel")
 					ITEM(124,"Alpha channel")
 				SUB_END
 				SEPARATOR
@@ -316,7 +316,6 @@
 			ITEM(150,"Set percent")
 			//ITEM(149,"Set flag")
 		SUB_END
-		SEPARATOR
 		SUB_START("Angle")
 			ITEM(147,"Set angle")
 			ITEM(151,"Set rotation quality")
@@ -447,7 +446,7 @@
 	}
 	if(!edPtr||(edPtr->multiImg/*&&!edPtr->dispTarget*/))
 	{
-		SUB_START("Current image")
+		SUB_START("Displayed image")
 			ITEM(2,"Index")
 			SEPARATOR
 			ITEM(8,"Width")

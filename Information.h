@@ -5,7 +5,7 @@
 // Basic object details
 #define	ObjectName			"Surface"
 #define	ObjectAuthor		"Looki"
-#define	ObjectCopyright		"Copyright © 2013 Looki"
+#define	ObjectCopyright		"Copyright © 2010 - 2013 by Lukas Meller aka Looki"
 #define	ObjectComment		"Flexible pixel canvas for image manipulation and complex effects"
 #define	ObjectURL			""
 #define	ObjectHelp			"Help\\Surface.chm"
