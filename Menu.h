@@ -188,12 +188,12 @@
 		SEPARATOR
 		ITEM(96,"Set clipping rectangle")
 		ITEM(97,"Clear clipping rectangle")
-#ifdef HWABETA
+//#ifdef HWABETA
 		SEPARATOR
 		ITEM(156, "Convert to bitmap")
 		ITEM(154, "Convert to HWA texture")
 		ITEM(155, "Convert to HWA target")
-#endif
+//#endif
 	SUB_END
 	SUB_START("Input / Output")
 		ITEM(153,"Load from file")

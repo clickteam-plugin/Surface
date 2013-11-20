@@ -38,6 +38,8 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 #endif
 #endif
 
+	srand(time(NULL));
+
 	LPRH rhPtr = rdPtr->rHo.hoAdRunHeader;
 	mv* mV = rdPtr->rHo.hoAdRunHeader->rh4.rh4Mv;
 
@@ -330,16 +332,21 @@ short WINAPI DLLExport DestroyRunObject(LPRDATA rdPtr, long fast)
 // 
 short WINAPI DLLExport HandleRunObject(LPRDATA rdPtr)
 {
-	srand(time(NULL));
-
 	if(rdPtr->rc.rcChanged)
 		return REFLAG_DISPLAY;
+
+	UpdateHotspot(rdPtr);
+
+
+	rdPtr->rHo.hoImgWidth = CurrentImg->GetWidth()*abs(rdPtr->rc.rcScaleX);
+	rdPtr->rHo.hoImgHeight = CurrentImg->GetHeight()*abs(rdPtr->rc.rcScaleY);
 
 	return 0;
 }
 
 
-cSurface* WINAPI DLLExport GetRunObjectSurface(LPRDATA rdPtr)
+//cSurface* WINAPI DLLExport GetRunObjectSurface(LPRDATA rdPtr)
+short WINAPI DLLExport DisplayRunObject(LPRDATA rdPtr)
 {
 	MaskChanged();
 
@@ -370,100 +377,108 @@ cSurface* WINAPI DLLExport GetRunObjectSurface(LPRDATA rdPtr)
 		return 0;
 	}
 
-	//Update window
+	// Begin render process...
 	LPRH rhPtr = rdPtr->rHo.hoAdRunHeader;
-	WinAddZone(rhPtr->rhIdEditWin,&rdPtr->rHo.hoRect);
+	LPSURFACE ps = WinGetSurface((int)rhPtr->rhIdEditWin);
+	cSurface* renderImage = CurrentImg;
 
-	//Transform
-	if(rdPtr->rc.rcScaleX != 1.0 || rdPtr->rc.rcScaleY != 1.0 || rdPtr->rc.rcAngle)
+	// On-screen coords
+	int screenX = rdPtr->rHo.hoX - rhPtr->rhWindowX;
+	int screenY = rdPtr->rHo.hoY - rhPtr->rhWindowY;
+
+	// Pure HWA blitting, yay!
+#ifdef HWABETA
+
+	if (rdPtr->isHWA)// && CurrentImg->GetType() >= ST_HWA_RTTEXTURE)
 	{
-		//Set up display surface
-		if(!rdPtr->display)
-			rdPtr->display = new cSurface;
-		if(rdPtr->display->IsValid())
-			rdPtr->display->Delete();
+		DWORD flags = 0;
 
-		cSurface Temp; 
+		// Rotate quality 1
+		if (rdPtr->rc.rcAngle && rdPtr->rs.rsFlags & RSFLAG_ROTATE_ANTIA)
+			flags |= BLTF_ANTIA;
 
-//#ifndef HWABETA
+		// Scale quality 1
+		if ((rdPtr->rc.rcScaleX != 1.0f || rdPtr->rc.rcScaleY != 1.0f) && rdPtr->rs.rsFlags & RSFLAG_SCALE_RESAMPLE)
+			flags |= BLTF_ANTIA;
 
-		if (CurrentImg->GetType() >= ST_HWA_RTTEXTURE)
-		{
-			LPSURFACE ps = WinGetSurface((int)rhPtr->rhIdEditWin);
-			POINT point = {};
-			CurrentImg->BlitEx(*ps, rdPtr->rHo.hoRect.left, 0, 1, 1, 0, 0, 100, 100, &point, 0);
-		}
-		else // NOTE: Body below #endif
-//#endif
+		// Hot spot (transform center)
+		POINT point = {ImageS(rdPtr->currentId)->hotX, ImageS(rdPtr->currentId)->hotY};
 
-		{
-			//Need scaling
-			if(rdPtr->rc.rcScaleX != 1.0 || rdPtr->rc.rcScaleY != 1.0)
-			{
-				Temp.Create(scaleW,scaleH,CurrentImg);
-				CurrentImg->Stretch(Temp,0,0,scaleW,scaleH,BMODE_OPAQUE,BOP_COPY,0,
-					((rdPtr->rs.rsFlags&RSFLAG_SCALE_RESAMPLE)?STRF_RESAMPLE:0)|STRF_COPYALPHA);
-			
-				//Mirror for negative values.
-				if(rdPtr->rc.rcScaleX < 0)
-					Temp.ReverseX();
-				if(rdPtr->rc.rcScaleY < 0)
-					Temp.ReverseY();
-			}
-
-			cSurface* RotateSource = CurrentImg;
-			if(Temp.IsValid())
-				RotateSource = &Temp;
-
-			//Need rotation
-			if(rdPtr->rc.rcAngle)
-			{
-				RotateSource->CreateRotatedSurface(*rdPtr->display, rdPtr->rc.rcAngle,
-					rdPtr->rs.rsFlags&RSFLAG_ROTATE_ANTIA?TRUE:FALSE, CurrentImg->GetTransparentColor(), TRUE);
-			}
-			//Clone the normal/scaled surface
-			else
-				rdPtr->display->Clone(*RotateSource);
-		}
-//#else
-//
-//		//Need anything
-//		if(rdPtr->rc.rcScaleX != 1.0 || rdPtr->rc.rcScaleY != 1.0 || rdPtr->rc.rcAngle)
-//		{
-//			/* Get rotated size */
-//			int w = scaleW, h = scaleH;
-//			cSurface::GetSizeOfRotatedRect(&w, &h, rdPtr->rc.rcAngle);
-//
-//			/* Create HWA display surface */
-//			cSurface blitEx, *proto;
-//			GetSurfacePrototype(&proto, 32, ST_MEMORY, SD_D3D9);
-//			rdPtr->display->Create(w, h, proto);
-//
-//			int origWidth = CurrentImg->GetWidth(), origHeight = CurrentImg->GetHeight();
-//			blitEx.Create(origWidth, origHeight, proto);
-//			CurrentImg->Blit(blitEx, 0, 0, BMODE_OPAQUE, BOP_COPY, 0, BLTF_COPYALPHA);
-//
-//			//Apply transformations
-//			POINT center = {origWidth/2, origHeight/2};
-//			printf("blit ex %d\n", blitEx.BlitEx(*rdPtr->display, w/2, h/2, rdPtr->rc.rcScaleX, rdPtr->rc.rcScaleY, 0, 0, origWidth, origHeight, &center, rdPtr->rc.rcAngle));
-//		}
-//
-//#endif
-		//Remove temporary surface
-		Temp.Delete();
-
-		//Calculate the scaled and rotated size and hotspot
-		UpdateHotspot(rdPtr);
-
-		return rdPtr->display;
+		CurrentImg->BlitEx(*ps, screenX, screenY, 
+			rdPtr->rc.rcScaleX, rdPtr->rc.rcScaleY, 0, 0,
+			CurrentImg->GetWidth(), CurrentImg->GetHeight(), &point, rdPtr->rc.rcAngle,
+			(rdPtr->rs.rsEffect & EFFECTFLAG_TRANSPARENT) ? BMODE_TRANSP : BMODE_OPAQUE,
+			BlitOp(rdPtr->rs.rsEffect & EFFECT_MASK),
+			rdPtr->rs.rsEffectParam, flags);
+		return 0;
 	}
-	//Display surface unneccessary, but let's keep it in the memory, we might rotate again later
-	else if(rdPtr->display)
-		rdPtr->display->Delete();
 
-	rdPtr->rHo.hoImgWidth = CurrentImg->GetWidth();
-	rdPtr->rHo.hoImgHeight = CurrentImg->GetHeight();
-	return CurrentImg;
+#endif
+
+	// Software blit: Offset draw position by transformed hotspot
+	screenX -= rdPtr->rHo.hoImgXSpot;
+	screenY -= rdPtr->rHo.hoImgYSpot;
+
+	// Temporary surface for transformations
+	cSurface temp;
+
+	//Need scaling
+	if(rdPtr->rc.rcScaleX != 1.0 || rdPtr->rc.rcScaleY != 1.0)
+	{
+		temp.Create(scaleW, scaleH, renderImage);
+		renderImage->Stretch(temp, 0, 0, scaleW, scaleH, BMODE_OPAQUE, BOP_COPY, 0, 
+			((rdPtr->rs.rsFlags&RSFLAG_SCALE_RESAMPLE)?STRF_RESAMPLE:0)|STRF_COPYALPHA);
+	
+		//Mirror for negative values.
+		if(rdPtr->rc.rcScaleX < 0)
+			temp.ReverseX();
+		if(rdPtr->rc.rcScaleY < 0)
+			temp.ReverseY();
+
+		// For now, the scaled image is the 'final' one
+		renderImage = &temp;
+	}
+
+	//Need rotation
+	if(rdPtr->rc.rcAngle)
+	{
+		cSurface rotateBuffer;
+		rotateBuffer.Clone(*renderImage);
+		printf("DRO: Scaled: %d,%d\n", renderImage->GetWidth(), renderImage->GetHeight());
+		rotateBuffer.CreateRotatedSurface(temp, rdPtr->rc.rcAngle, 
+			rdPtr->rs.rsFlags & RSFLAG_ROTATE_ANTIA, CurrentImg->GetTransparentColor(), TRUE);
+		renderImage = &temp;
+		printf("DRO: Rotated: %d,%d\n", renderImage->GetWidth(), renderImage->GetHeight());
+	}
+
+	if (renderImage && renderImage->IsValid())
+	{
+		rdPtr->rHo.hoImgWidth = renderImage->GetWidth();
+		rdPtr->rHo.hoImgHeight = renderImage->GetHeight();
+
+		renderImage->Blit(
+			*ps,
+			screenX,
+			screenY,
+			0, 0,
+			renderImage->GetWidth(),
+			renderImage->GetHeight(),
+			(rdPtr->rs.rsEffect & EFFECTFLAG_TRANSPARENT) ? BMODE_TRANSP : BMODE_OPAQUE,
+			BlitOp(rdPtr->rs.rsEffect & EFFECT_MASK),
+			rdPtr->rs.rsEffectParam
+		);
+
+		//Update window
+		RECT rect;
+		rect.left = screenX;
+		rect.top = screenY;
+		rect.right = screenX + renderImage->GetWidth();
+		rect.bottom = screenY + renderImage->GetHeight();
+		//ps->Rectangle(rect.left, rect.top, rect.right, rect.bottom, RED, 0, 0, TRUE);
+		WinAddZone(rhPtr->rhIdEditWin, &rect);
+	}
+
+	return 0;
 }
 //#endif
 
@@ -482,28 +497,29 @@ cSurface* WINAPI DLLExport GetRunObjectSurface(LPRDATA rdPtr)
 
 sMask* WINAPI DLLExport GetRunObjectCollisionMask(LPRDATA rdPtr, LPARAM lParam)
 {
-	// Typical example for active objects
-	// ----------------------------------
 	// Opaque? collide with box
 	if ((rdPtr->rs.rsEffect & EFFECTFLAG_TRANSPARENT) == 0)
 		return 0;
+
 	// Transparent? Create mask
 	LPSMASK pMask = rdPtr->collision;
 	if(!pMask)
 	{
-		if(rdPtr->currentId>=0&&CurrentImg)
+		if(rdPtr->currentId >=0 && CurrentImg)
 		{	
 			cSurface* Display = CurrentImg;
 			if(rdPtr->display)
 				Display = rdPtr->display;
 
-			DWORD dwMaskSize = Display->CreateMask(NULL,lParam);
+			DWORD dwMaskSize = Display->CreateMask(NULL, lParam);
 			if(dwMaskSize)
 			{
 				pMask = (LPSMASK)calloc(dwMaskSize,1);
 				if (pMask)
 				{
 					Display->CreateMask(pMask, lParam);
+					pMask->mkXSpot = rdPtr->rHo.hoImgXSpot;
+					pMask->mkYSpot = rdPtr->rHo.hoImgYSpot;
 					rdPtr->collision = pMask;
 				}
 			}

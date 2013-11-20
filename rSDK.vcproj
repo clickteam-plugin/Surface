@@ -2,8 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="rSDK"
+	Name="Surface (F2.5)"
 	ProjectGUID="{AAF834BB-E8B2-49B8-8086-0FCD7E7DE7A6}"
+	RootNamespace="Surface (F2.5)"
 	TargetFrameworkVersion="0"
 	>
 	<Platforms>
@@ -371,7 +372,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs2.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs25.lib"
 				OutputFile="c:\mmf2\extensions\Surface.mfx"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -1463,7 +1464,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs2.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs25.lib"
 				OutputFile="c:\mmf2\extensions\Unicode\Surface.mfx"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"

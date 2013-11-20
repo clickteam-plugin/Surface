@@ -26,7 +26,7 @@
 #define ForVersion			PRODUCT_VERSION_STANDARD
 
 // Set this to the latest MMF build out when you build the object
-#define	MinimumBuild		280
+#define	MinimumBuild		257
 
 // --------------------
 // Beta information

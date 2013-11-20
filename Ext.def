@@ -43,7 +43,7 @@ EXPORTS
 	CreateRunObject			@50
 	DestroyRunObject		@51
 	HandleRunObject			@52
-;	DisplayRunObject		@53
+	DisplayRunObject		@53
 	PauseRunObject			@57
 	ContinueRunObject		@58
 	GetRunObjectInfos		@59
@@ -78,7 +78,7 @@ EXPORTS
 	EndFrame				@88
  	GetExpressionParam		@89
 
-	GetRunObjectSurface		@90
+;	GetRunObjectSurface		@90
 	GetRunObjectCollisionMask	@91
 
 ;	GetRunObjectFont		@92

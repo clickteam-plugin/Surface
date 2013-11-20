@@ -23,7 +23,6 @@ EXT_INIT()
 
 BOOL WINAPI DllMain(HINSTANCE hDLL, DWORD dwReason, LPVOID lpReserved)
 {
-
 	conditionsInfos = getConditionInfos();
 	actionsInfos = getActionInfos();
 	expressionsInfos = getExpressionInfos();
@@ -196,8 +195,6 @@ void WINAPI DLLExport UnloadObject(mv _far *mV, LPEDATA edPtr, int reserved)
 // For you to update your object structure to newer versions
 // Called at both edit time and run time
 // 
-
-#define c(foo) edPtr->foo = oldPtr->foo
 
 HGLOBAL WINAPI DLLExport UpdateEditStructure(mv __far *mV, void __far * OldEdPtr)
 {
