@@ -322,12 +322,12 @@
 		SUB_START("Effect")
 			ITEM(40,"Set by index")
 			ITEM(126,"Set by name")
-			SUB_START("Semi-transparency...")
-				ITEM(39,"Set semi-transparency")
-			SUB_END
-			SUB_START("Tint...")
-				ITEM(157, "Set tint (HWA only)")
-			SUB_END
+			//SUB_START("Set parameter")
+			//	//ITEM(39,"Use semi-transparency")
+			SEPARATOR
+			ITEM(168, "Set alpha")
+			ITEM(157, "Set tint (HWA only)")
+			//SUB_END
 			SEPARATOR
 			ITEM(136,"Set callback (overrides effect)")
 		SUB_END

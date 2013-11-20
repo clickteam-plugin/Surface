@@ -53,7 +53,7 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 	//Font
 	rdPtr->hFont = 0;
 	memcpy(&rdPtr->textFont,&edPtr->textFont,sizeof(LOGFONT));
-	rdPtr->hFlags = edPtr->textFlags;
+	rdPtr->hFlags = edPtr->textFlags;	
 
 	//Depth
 	rdPtr->depth = 24;
@@ -62,6 +62,7 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 	rdPtr->bM = BMODE_TRANSP;
 	rdPtr->bOp = BOP_COPY;
 	rdPtr->bParam = 0;
+	rdPtr->bParam = 0xffffffff;
 	rdPtr->bFlags = 0;
 	rdPtr->bdX = 0;
 	rdPtr->bdY = 0;
@@ -128,7 +129,11 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 	//Functions for extension integration
 	rdPtr->imageAt = GetImgAt;
 	rdPtr->imageCount = GetImgCount;
-
+	//Running HWA?
+	LPSURFACE wSurf = WinGetSurface((int)rhPtr->rhIdEditWin);
+	int nDrv = wSurf->GetDriver();
+	rdPtr->isHWA = nDrv == SD_D3D8 || nDrv == SD_D3D9;
+		
 	//Display surface not necessary by default
 	rdPtr->display = 0;
 	rdPtr->rc.rcAngle = 0;
@@ -378,35 +383,48 @@ cSurface* WINAPI DLLExport GetRunObjectSurface(LPRDATA rdPtr)
 		if(rdPtr->display->IsValid())
 			rdPtr->display->Delete();
 
-		cSurface Temp;
+		cSurface Temp; 
 
 //#ifndef HWABETA
 
-		//Need scaling
-		if(rdPtr->rc.rcScaleX != 1.0 || rdPtr->rc.rcScaleY != 1.0)
+		if (CurrentImg->GetType() >= ST_HWA_RTTEXTURE)
 		{
-			Temp.Create(scaleW,scaleH,CurrentImg);
-			CurrentImg->Stretch(Temp,0,0,scaleW,scaleH,BMODE_OPAQUE,BOP_COPY,0,
-				((rdPtr->rs.rsFlags&RSFLAG_SCALE_RESAMPLE)?STRF_RESAMPLE:0)|STRF_COPYALPHA);
-		
-			//Mirror for negative values.
-			if(rdPtr->rc.rcScaleX < 0)
-				Temp.ReverseX();
-			if(rdPtr->rc.rcScaleY < 0)
-				Temp.ReverseY();
+			LPSURFACE ps = WinGetSurface((int)rhPtr->rhIdEditWin);
+			POINT point = {};
+			CurrentImg->BlitEx(*ps, rdPtr->rHo.hoRect.left, 0, 1, 1, 0, 0, 100, 100, &point, 0);
 		}
+		else // NOTE: Body below #endif
+//#endif
 
-		cSurface* RotateSource = CurrentImg;
-		if(Temp.IsValid())
-			RotateSource = &Temp;
+		{
+			//Need scaling
+			if(rdPtr->rc.rcScaleX != 1.0 || rdPtr->rc.rcScaleY != 1.0)
+			{
+				Temp.Create(scaleW,scaleH,CurrentImg);
+				CurrentImg->Stretch(Temp,0,0,scaleW,scaleH,BMODE_OPAQUE,BOP_COPY,0,
+					((rdPtr->rs.rsFlags&RSFLAG_SCALE_RESAMPLE)?STRF_RESAMPLE:0)|STRF_COPYALPHA);
+			
+				//Mirror for negative values.
+				if(rdPtr->rc.rcScaleX < 0)
+					Temp.ReverseX();
+				if(rdPtr->rc.rcScaleY < 0)
+					Temp.ReverseY();
+			}
 
-		//Need rotation
-		if(rdPtr->rc.rcAngle)
-			RotateSource->CreateRotatedSurface(*rdPtr->display, rdPtr->rc.rcAngle,
-				rdPtr->rs.rsFlags&RSFLAG_ROTATE_ANTIA?TRUE:FALSE, CurrentImg->GetTransparentColor(), TRUE);
-		//Clone the normal/scaled surface
-		else
-			rdPtr->display->Clone(*RotateSource);
+			cSurface* RotateSource = CurrentImg;
+			if(Temp.IsValid())
+				RotateSource = &Temp;
+
+			//Need rotation
+			if(rdPtr->rc.rcAngle)
+			{
+				RotateSource->CreateRotatedSurface(*rdPtr->display, rdPtr->rc.rcAngle,
+					rdPtr->rs.rsFlags&RSFLAG_ROTATE_ANTIA?TRUE:FALSE, CurrentImg->GetTransparentColor(), TRUE);
+			}
+			//Clone the normal/scaled surface
+			else
+				rdPtr->display->Clone(*RotateSource);
+		}
 //#else
 //
 //		//Need anything

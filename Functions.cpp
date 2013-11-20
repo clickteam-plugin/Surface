@@ -123,10 +123,9 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 	if(rdPtr->bStretch==2) strf |= STRF_RESAMPLE;
 	else if(rdPtr->bStretch==3) strf |= STRF_RESAMPLE_TRANSP;
 
-
 #ifdef HWABETA
 	/* HWA */
-	if (source->GetType() >= ST_HWA_RTTEXTURE && dest->GetType() >= ST_HWA_SCREEN)
+	if (rdPtr->isHWA && source->GetType() >= ST_HWA_RTTEXTURE && dest->GetType() >= ST_HWA_SCREEN)
 	{
 		// Use region if necessary
 		if(rdPtr->bsRegion)
@@ -159,7 +158,7 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 
 		float angle = rdPtr->bAngle;
 
-		return source->BlitEx(*dest, dx, dy, scaleX, scaleY, sx, sy, sw, sh, &hotspot, angle, rdPtr->bM, rdPtr->bOp, rdPtr->bParam, strf);
+		return source->BlitEx(*dest, dx, dy, scaleX, scaleY, sx, sy, sw, sh, &hotspot, angle, rdPtr->bM, (BlitOp)((DWORD)rdPtr->bOp | (DWORD)BOP_RGBAFILTER), rdPtr->bParam, strf);
 	}
 #endif
 
@@ -297,7 +296,7 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 			rdPtr->callback = rdPtr->bCallback;
 		//Use semi-transparency
 		else if(rdPtr->bOp == BOP_BLEND)
-			factor -= rdPtr->bParam/128.0f;
+			factor *= ((rdPtr->bParam & 0xff000000) >> 24)/255.0f;
 
 		for(int x=x1; x<x2; ++x)
 		{
@@ -496,6 +495,9 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 		sh = source->GetHeight();
 	}
 
+	// Classic 0-128 semi transparency
+	LPARAM semiTransparency = 128 - ((rdPtr->bParam & 0xff000000) >> 24)*128.0f/255;
+
 	//Blitting
 	if(!rdPtr->bStretch)
 	{
@@ -512,7 +514,7 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 
 		//Simple blit
 		return source->Blit(*dest,dx,dy,sx,sy,sw,sh,
-			rdPtr->bM,rdPtr->bOp,rdPtr->bParam,rdPtr->bFlags);
+			rdPtr->bM,rdPtr->bOp,semiTransparency,rdPtr->bFlags);
 	}
 	//Stretching
 	else
@@ -522,7 +524,7 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 			strf |= STRF_COPYALPHA;
 		//Stretch
 		return source->Stretch(*dest,dx,dy,rdPtr->bdW,rdPtr->bdH,sx,sy,sw,sh,
-			rdPtr->bM,rdPtr->bOp,rdPtr->bParam,strf);
+			rdPtr->bM,rdPtr->bOp,semiTransparency,strf);
 	}
 }
 

@@ -177,6 +177,7 @@ typedef struct tagRDATA
 	//Stored image for quick undo
 	cSurface*			stored;
 	// Misc
+	bool				isHWA;
 	int					randomSeed;
 	
 } RUNDATA;

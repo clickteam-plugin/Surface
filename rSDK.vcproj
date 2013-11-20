@@ -1436,7 +1436,7 @@
 				EnableIntrinsicFunctions="false"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="..\..\Inc"
-				PreprocessorDefinitions="_DEBUG;UNICODE;_UNICODE;WIN32;_WINDOWS;STRICT;COXSDK;IN_EXT_VERSION2;RSDK"
+				PreprocessorDefinitions="_DEBUG;HWABETA;UNICODE;_UNICODE;WIN32;_WINDOWS;STRICT;COXSDK;IN_EXT_VERSION2;RSDK"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				TreatWChar_tAsBuiltInType="false"
