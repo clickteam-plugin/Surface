@@ -372,7 +372,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs25.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs2.lib"
 				OutputFile="c:\mmf2\extensions\Surface.mfx"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -1464,7 +1464,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs25.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs2.lib"
 				OutputFile="c:\mmf2\extensions\Unicode\Surface.mfx"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
