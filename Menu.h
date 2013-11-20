@@ -293,6 +293,9 @@
 			SUB_END
 		SUB_END
 		SEPARATOR
+		ITEM(169, "Push settings")
+		ITEM(170, "Pop settings")
+		SEPARATOR
 		ITEM(0,"~- Position && Size -")
 		SUB_START("Destination")
 			ITEM(41,"Set position")

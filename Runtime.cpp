@@ -61,30 +61,31 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 	rdPtr->depth = 24;
 
 	//Internal blending
-	rdPtr->bM = BMODE_TRANSP;
-	rdPtr->bOp = BOP_COPY;
-	rdPtr->bParam = 0;
-	rdPtr->bParam = 0xffffffff;
-	rdPtr->bFlags = 0;
-	rdPtr->bdX = 0;
-	rdPtr->bdY = 0;
-	rdPtr->bdW = 0;
-	rdPtr->bdH = 0;
-	rdPtr->bStretch = 0;
-	rdPtr->bsX = 0;
-	rdPtr->bsY = 0;
-	rdPtr->bsW = 0;
-	rdPtr->bsH = 0;
-	rdPtr->bsRegion = false;
-	rdPtr->bCallback = 0;
-	rdPtr->bProcOp = 0;
-	rdPtr->bProcOpSrc = 1;
-	rdPtr->bAlphaCompose = false;
-	rdPtr->bAngle = 0;
-	rdPtr->bAngleResample = false;
-	rdPtr->bhX = 0;
-	rdPtr->bhY = 0;
-	rdPtr->bhMode = 1; // no longer possible to disable
+	rdPtr->b.mode = BMODE_TRANSP;
+	rdPtr->b.operation = BOP_COPY;
+	rdPtr->b.param = 0;
+	rdPtr->b.param = 0xffffffff;
+	rdPtr->b.flags = 0;
+	rdPtr->b.destX = 0;
+	rdPtr->b.destY = 0;
+	rdPtr->b.destW = 0;
+	rdPtr->b.destH = 0;
+	rdPtr->b.StretchMode = 0;
+	rdPtr->b.srcX = 0;
+	rdPtr->b.srcY = 0;
+	rdPtr->b.srcW = 0;
+	rdPtr->b.srcH = 0;
+	rdPtr->b.srcUse = false;
+	rdPtr->b.callback[0] = 0;
+	rdPtr->b.procOp[0] = 0;
+	rdPtr->b.procOpSrc = 1;
+	rdPtr->b.composeAlpha = false;
+	rdPtr->b.angle = 0;
+	rdPtr->b.angleResample = false;
+	rdPtr->b.hotX = 0;
+	rdPtr->b.hotY = 0;
+	rdPtr->b.hotspotMode = 1; // no longer possible to disable
+	rdPtr->blitStackCursor = -1;
 	//Current & target surfaces
 	rdPtr->targetId = -1;
 	rdPtr->target = 0;
@@ -293,12 +294,6 @@ short WINAPI DLLExport DestroyRunObject(LPRDATA rdPtr, long fast)
 		}
 		delete rdPtr->fill;
 	}
-	//Blit callback
-	if(rdPtr->bCallback)
-		free(rdPtr->bCallback);
-	//Blit proc operation
-	if(rdPtr->bProcOp)
-		free(rdPtr->bProcOp);
 	//Polygon points
 	delete rdPtr->points;
 	//Locked buffer

@@ -24,11 +24,11 @@ COLORREF CALLBACK OpBlitProc(COLORREF dest, COLORREF src, DWORD lParam)
 	BYTE* srcBytes = (BYTE*)&src;
 	BYTE* destBytes = (BYTE*)&dest;
 
-	char* op = rdPtr->bProcOp;
+	TCHAR* op = rdPtr->b.procOp;
 
-	float cr = srcBytes[0]*rdPtr->bProcOpSrc;
-	float cg = srcBytes[1]*rdPtr->bProcOpSrc;
-	float cb = srcBytes[2]*rdPtr->bProcOpSrc;
+	float cr = srcBytes[0]*rdPtr->b.procOpSrc;
+	float cg = srcBytes[1]*rdPtr->b.procOpSrc;
+	float cb = srcBytes[2]*rdPtr->b.procOpSrc;
 
 	//Hardcode *, **, /
 	if(*op=='*'||*op=='/')
@@ -80,23 +80,23 @@ void RotatePoint(double angle, int* hotX, int* hotY, int sw, int sh, int* dx, in
 bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 {
 	//Some quick checks
-	if(rdPtr->bsRegion && (rdPtr->bsW <= 0 || rdPtr->bsH <= 0))
+	if(rdPtr->b.srcUse && (rdPtr->b.srcW <= 0 || rdPtr->b.srcH <= 0))
 		return false;
-	if(rdPtr->bStretch && (rdPtr->bdW <= 0 || rdPtr->bdH <= 0))
+	if(rdPtr->b.StretchMode && (rdPtr->b.destW <= 0 || rdPtr->b.destH <= 0))
 		return false;
 
 	//Some important variables
-	int dx = rdPtr->bdX;
-	int dy = rdPtr->bdY;
-	int sx = rdPtr->bsRegion ? rdPtr->bsX : 0;
-	int sy = rdPtr->bsRegion ? rdPtr->bsY : 0;
+	int dx = rdPtr->b.destX;
+	int dy = rdPtr->b.destY;
+	int sx = rdPtr->b.srcUse ? rdPtr->b.srcX : 0;
+	int sy = rdPtr->b.srcUse ? rdPtr->b.srcY : 0;
 	int sw = source->GetWidth();
 	int sh = source->GetHeight();
 
 	//Prepare hot spot
-	int hotX = rdPtr->bhX;
-	int hotY = rdPtr->bhY;
-	if(rdPtr->bhMode & 2)
+	int hotX = rdPtr->b.hotX;
+	int hotY = rdPtr->b.hotY;
+	if(rdPtr->b.hotspotMode & 2)
 	{
 		hotX = sw/100.0*hotX;
 		hotY = sh/100.0*hotY;
@@ -120,20 +120,20 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 	// stretch flag (used by multiple branches)
 	int strf = 0;
 	//Resampling
-	if(rdPtr->bStretch==2) strf |= STRF_RESAMPLE;
-	else if(rdPtr->bStretch==3) strf |= STRF_RESAMPLE_TRANSP;
+	if(rdPtr->b.StretchMode==2) strf |= STRF_RESAMPLE;
+	else if(rdPtr->b.StretchMode==3) strf |= STRF_RESAMPLE_TRANSP;
 
 #ifdef HWABETA
 	/* HWA */
 	if (rdPtr->isHWA && source->GetType() >= ST_HWA_RTTEXTURE && dest->GetType() >= ST_HWA_SCREEN)
 	{
 		// Use region if necessary
-		if(rdPtr->bsRegion)
+		if(rdPtr->b.srcUse)
 		{
 			sx = max(0,min(sw,sx));
 			sy = max(0,min(sh,sy));
-			sw = max(0,min(rdPtr->bsW,sw));
-			sh = max(0,min(rdPtr->bsH,sh));
+			sw = max(0,min(rdPtr->b.srcW,sw));
+			sh = max(0,min(rdPtr->b.srcH,sh));
 		}
 
 		if(!sw || !sh)
@@ -141,7 +141,7 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 
 		POINT hotspot = {0, 0};
 
-		if(rdPtr->bhMode)
+		if(rdPtr->b.hotspotMode)
 		{
 			hotspot.x = hotX;
 			hotspot.y = hotY;
@@ -150,20 +150,20 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 		float scaleX = 1;
 		float scaleY = 1;
 
-		if(rdPtr->bStretch)
+		if(rdPtr->b.StretchMode)
 		{
-			scaleX = (rdPtr->bdW * 1.0f) / sw;
-			scaleY = (rdPtr->bdH * 1.0f) / sh;
+			scaleX = (rdPtr->b.destW * 1.0f) / sw;
+			scaleY = (rdPtr->b.destH * 1.0f) / sh;
 		}
 
-		float angle = rdPtr->bAngle;
+		float angle = rdPtr->b.angle;
 
-		return source->BlitEx(*dest, dx, dy, scaleX, scaleY, sx, sy, sw, sh, &hotspot, angle, rdPtr->bM, (BlitOp)((DWORD)rdPtr->bOp | (DWORD)BOP_RGBAFILTER), rdPtr->bParam, strf);
+		return source->BlitEx(*dest, dx, dy, scaleX, scaleY, sx, sy, sw, sh, &hotspot, angle, rdPtr->b.mode, (BlitOp)((DWORD)rdPtr->b.operation | (DWORD)BOP_RGBAFILTER), rdPtr->b.param, strf);
 	}
 #endif
 
 	//Compose alpha
-	if(rdPtr->bAlphaCompose && rdPtr->bM == BMODE_TRANSP)
+	if(rdPtr->b.composeAlpha && rdPtr->b.mode == BMODE_TRANSP)
 	{
 
 		//Get dimensions
@@ -197,8 +197,8 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 		//Source region or not
 		int x1 = sx;
 		int y1 = sy;
-		int x2 = rdPtr->bsRegion ? (x1+rdPtr->bsW) : sw;
-		int y2 = rdPtr->bsRegion ? (y1+rdPtr->bsH) : sh;
+		int x2 = rdPtr->b.srcUse ? (x1+rdPtr->b.srcW) : sw;
+		int y2 = rdPtr->b.srcUse ? (y1+rdPtr->b.srcH) : sh;
 
 		x1 = max(0,min(sw,x1));
 		y1 = max(0,min(sh,y1));
@@ -211,18 +211,18 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 		
 		//Scale if necessary
 		cSurface scaled;
-		if(rdPtr->bStretch)
+		if(rdPtr->b.StretchMode)
 		{
-			scaled.Create(rdPtr->bdW,rdPtr->bdH,source);
+			scaled.Create(rdPtr->b.destW,rdPtr->b.destH,source);
 			scaled.SetTransparentColor(source->GetTransparentColor());
-			source->Stretch(scaled,0,0,rdPtr->bdW,rdPtr->bdH,x1,y1,x2-x1,y2-y1,BMODE_OPAQUE,BOP_COPY,0,STRF_COPYALPHA|(rdPtr->bStretch-1));
+			source->Stretch(scaled,0,0,rdPtr->b.destW,rdPtr->b.destH,x1,y1,x2-x1,y2-y1,BMODE_OPAQUE,BOP_COPY,0,STRF_COPYALPHA|(rdPtr->b.StretchMode-1));
 			source = &scaled;
 			dx += x1;
 			dy += y1;
-			hotX *= rdPtr->bdW*1.0f/sw; //(x2-x1) makes hotspot relative to region
-			hotY *= rdPtr->bdH*1.0f/sh; //(y2-y1)
-			sw = rdPtr->bdW;
-			sh = rdPtr->bdH;
+			hotX *= rdPtr->b.destW*1.0f/sw; //(x2-x1) makes hotspot relative to region
+			hotY *= rdPtr->b.destH*1.0f/sh; //(y2-y1)
+			sw = rdPtr->b.destW;
+			sh = rdPtr->b.destH;
 			x1 = 0;
 			y1 = 0;
 			x2 = sw;
@@ -235,18 +235,18 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 
 		//Rotation is necessary
 		cSurface rotated;
-		if(rdPtr->bAngle != 0)
+		if(rdPtr->b.angle != 0)
 		{
-			double angle = rdPtr->bAngle/180.0*PI;
+			double angle = rdPtr->b.angle/180.0*PI;
 			cSurface region;
 			region.Create(x2-x1,y2-y1,source);
 			source->Blit(region,-x1,-y1,BMODE_OPAQUE,BOP_COPY,0,BLTF_COPYALPHA);
-			region.CreateRotatedSurface(rotated,rdPtr->bAngle,rdPtr->bAngleResample,source->GetTransparentColor(),FALSE);
+			region.CreateRotatedSurface(rotated,rdPtr->b.angle,rdPtr->b.angleResample,source->GetTransparentColor(),FALSE);
 			source = &rotated;
 			//Rotate the hotspot and adjust the rotated bounding box
 			dx += x1;
 			dy += y1;
-			if(rdPtr->bhMode & 1)
+			if(rdPtr->b.hotspotMode & 1)
 				RotatePoint(angle,&hotX,&hotY,region.GetWidth(),region.GetHeight(),&dx,&dy);
 			sw = rotated.GetWidth();
 			sh = rotated.GetHeight();
@@ -257,7 +257,7 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 		}
 
 		//Apply hot spot
-		if(rdPtr->bhMode & 1)
+		if(rdPtr->b.hotspotMode & 1)
 		{
 			dx -= hotX;
 			dy -= hotY;
@@ -292,11 +292,11 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 
 		float factor = 1.0f;
 		//Use user callback
-		if(rdPtr->bCallback)
-			rdPtr->callback = rdPtr->bCallback;
+		if(rdPtr->b.callback)
+			rdPtr->callback = rdPtr->b.callback;
 		//Use semi-transparency
-		else if(rdPtr->bOp == BOP_BLEND)
-			factor *= ((rdPtr->bParam & 0xff000000) >> 24)/255.0f;
+		else if(rdPtr->b.operation == BOP_BLEND)
+			factor *= ((rdPtr->b.param & 0xff000000) >> 24)/255.0f;
 
 		for(int x=x1; x<x2; ++x)
 		{
@@ -323,10 +323,10 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 				COLORREF c;
 
 				//Composite (with ink effect)
-				if(!rdPtr->bCallback)
+				if(!rdPtr->b.callback)
 				{
 					
-					switch(rdPtr->bOp)
+					switch(rdPtr->b.operation)
 					{
 						case BOP_ADD:
 							sr = max(0,min(255,sr+dr));
@@ -415,26 +415,26 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 	//For hotspots
 	int dw = sw;
 	int dh = sh;
-	if(rdPtr->bStretch)
+	if(rdPtr->b.StretchMode)
 	{
-		dw = rdPtr->bdW;
-		dh = rdPtr->bdH;
+		dw = rdPtr->b.destW;
+		dh = rdPtr->b.destH;
 	}
 	if(dw <= 0 || dh <= 0)
 		return false;
 
 	//Recursive call for rotated images
-	if(rdPtr->bAngle != 0)
+	if(rdPtr->b.angle != 0)
 	{
 		//Create a fake rdPtr with destination (0,0) and angle 0
 		RUNDATA fakePtr;
 		memcpy((void*)&fakePtr,rdPtr,sizeof(RUNDATA));
-		fakePtr.bdX = 0;
-		fakePtr.bdY = 0;
-		fakePtr.bAngle = 0;
-		fakePtr.bCallback = 0;
-		fakePtr.bOp = BOP_COPY;
-		fakePtr.bhMode = 0;
+		fakePtr.b.destX = 0;
+		fakePtr.b.destY = 0;
+		fakePtr.b.angle = 0;
+		fakePtr.b.callback[0] = 0;
+		fakePtr.b.operation = BOP_COPY;
+		fakePtr.b.hotspotMode = 0;
 		//Blit our source image onto a temporary image
 		cSurface rotsource;
 		rotsource.Create(dw,dh,source);
@@ -442,29 +442,29 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 		{
 			//Rotate the image and blit onto the destination image
 			cSurface rotated;
-			rotsource.CreateRotatedSurface(rotated,rdPtr->bAngle,rdPtr->bAngleResample,source->GetTransparentColor(),FALSE);
-			fakePtr.bdX = rdPtr->bdX;
-			fakePtr.bdY = rdPtr->bdY;
-			fakePtr.bCallback = rdPtr->bCallback;
-			fakePtr.bOp = rdPtr->bOp;
-			fakePtr.bStretch = 0;
-			fakePtr.bsRegion = 0;
-			fakePtr.bhMode = 0;
-			if(rdPtr->bhMode & 1)
+			rotsource.CreateRotatedSurface(rotated,rdPtr->b.angle,rdPtr->b.angleResample,source->GetTransparentColor(),FALSE);
+			fakePtr.b.destX = rdPtr->b.destX;
+			fakePtr.b.destY = rdPtr->b.destY;
+			memcpy(fakePtr.b.callback, rdPtr->b.callback, sizeof(rdPtr->b.callback));
+			fakePtr.b.operation = rdPtr->b.operation;
+			fakePtr.b.StretchMode = 0;
+			fakePtr.b.srcUse = 0;
+			fakePtr.b.hotspotMode = 0;
+			if(rdPtr->b.hotspotMode & 1)
 			{
 				int dw = sw;
 				int dh = sh;
-				if(rdPtr->bStretch)
+				if(rdPtr->b.StretchMode)
 				{
-					dw = rdPtr->bdW;
-					dh = rdPtr->bdH;
+					dw = rdPtr->b.destW;
+					dh = rdPtr->b.destH;
 					hotX *= dw*1.0f/sw;
 					hotY *= dh*1.0f/sh;
 				}
-				if(rdPtr->bAngle != 0)
-					RotatePoint(rdPtr->bAngle/180.0*PI,&hotX,&hotY,dw,dh,&fakePtr.bdX,&fakePtr.bdY);
-				fakePtr.bdX -= hotX;
-				fakePtr.bdY -= hotY;
+				if(rdPtr->b.angle != 0)
+					RotatePoint(rdPtr->b.angle/180.0*PI,&hotX,&hotY,dw,dh,&fakePtr.b.destX,&fakePtr.b.destY);
+				fakePtr.b.destX -= hotX;
+				fakePtr.b.destY -= hotY;
 			}
 			return Blit(&rotated,dest,&fakePtr);
 		}
@@ -472,19 +472,19 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 	}
 
 	//No rotation, but apply hotspot
-	if(rdPtr->bhMode & 1)
+	if(rdPtr->b.hotspotMode & 1)
 	{
 		dx -= hotX*dw*1.0f/sw;
 		dy -= hotY*dh*1.0f/sh;
 	}
 
 	//Use region if necessary
-	if(rdPtr->bsRegion)
+	if(rdPtr->b.srcUse)
 	{
 		sx = max(0,min(sw,sx));
 		sy = max(0,min(sh,sy));
-		sw = max(0,min(rdPtr->bsW,sw));
-		sh = max(0,min(rdPtr->bsH,sh));
+		sw = max(0,min(rdPtr->b.srcW,sw));
+		sh = max(0,min(rdPtr->b.srcH,sh));
 	}
 	//Just to make sure...
 	else
@@ -496,35 +496,35 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 	}
 
 	// Classic 0-128 semi transparency
-	LPARAM semiTransparency = 128 - ((rdPtr->bParam & 0xff000000) >> 24)*128.0f/255;
+	LPARAM semiTransparency = 128 - ((rdPtr->b.param & 0xff000000) >> 24)*128.0f/255;
 
 	//Blitting
-	if(!rdPtr->bStretch)
+	if(!rdPtr->b.StretchMode)
 	{
 		//Filter callback blit
-		if(rdPtr->bCallback)
+		if(rdPtr->b.callback[0])
 		{
-			rdPtr->callback = rdPtr->bCallback;
-			return source->FilterBlit(*dest,dx,dy,sx,sy,sw,sh,rdPtr->bM,CallBlitProc,(LPARAM)rdPtr);
+			rdPtr->callback = rdPtr->b.callback;
+			return source->FilterBlit(*dest,dx,dy,sx,sy,sw,sh,rdPtr->b.mode,CallBlitProc,(LPARAM)rdPtr);
 		}
 
 		//Operation blit
-		if(rdPtr->bProcOp)
-			return source->FilterBlit(*dest,dx,dy,sx,sy,sw,sh,rdPtr->bM,OpBlitProc,(LPARAM)rdPtr);
+		if(rdPtr->b.procOp[0])
+			return source->FilterBlit(*dest,dx,dy,sx,sy,sw,sh,rdPtr->b.mode,OpBlitProc,(LPARAM)rdPtr);
 
 		//Simple blit
 		return source->Blit(*dest,dx,dy,sx,sy,sw,sh,
-			rdPtr->bM,rdPtr->bOp,semiTransparency,rdPtr->bFlags);
+			rdPtr->b.mode,rdPtr->b.operation,semiTransparency,rdPtr->b.flags);
 	}
 	//Stretching
 	else
 	{
 		//Copy alpha
-		if(rdPtr->bFlags & BLTF_COPYALPHA)
+		if(rdPtr->b.flags & BLTF_COPYALPHA)
 			strf |= STRF_COPYALPHA;
 		//Stretch
-		return source->Stretch(*dest,dx,dy,rdPtr->bdW,rdPtr->bdH,sx,sy,sw,sh,
-			rdPtr->bM,rdPtr->bOp,semiTransparency,strf);
+		return source->Stretch(*dest,dx,dy,rdPtr->b.destW,rdPtr->b.destH,sx,sy,sw,sh,
+			rdPtr->b.mode,rdPtr->b.operation,semiTransparency,strf);
 	}
 }
 
@@ -644,7 +644,7 @@ int GetImgCount(RUNDATA* rdPtr)
 	return rdPtr->surf->size();
 }
 
-void Operation(char* op,BYTE* a,float b)
+void Operation(TCHAR* op,BYTE* a,float b)
 {
 	int temp = *a;
 	switch(*op)
@@ -882,7 +882,7 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 
 	////Alpha channels first
 	//cSurface newDestAlpha;
-	//if(rdPtr->bAlphaCompose && rdPtr->bM == BMODE_TRANSP && (source->HasAlpha() || dest->HasAlpha()))
+	//if(rdPtr->b.composeAlpha && rdPtr->b.mode == BMODE_TRANSP && (source->HasAlpha() || dest->HasAlpha()))
 	//{
 	//	cSurface* sourceAlpha = 0;
 	//	cSurface* destAlpha = 0;
@@ -926,16 +926,16 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 //{
 //	//Some quick checks
-//	if(rdPtr->bsRegion && (rdPtr->bsW <= 0 || rdPtr->bsH <= 0))
+//	if(rdPtr->b.srcUse && (rdPtr->b.srcW <= 0 || rdPtr->b.srcH <= 0))
 //		return false;
-//	if(rdPtr->bStretch && (rdPtr->bdW <= 0 || rdPtr->bdH <= 0))
+//	if(rdPtr->b.StretchMode && (rdPtr->b.destW <= 0 || rdPtr->b.destH <= 0))
 //		return false;
 //
 //	//Some important variables
-//	int dx = rdPtr->bdX;
-//	int dy = rdPtr->bdY;
-//	int sx = rdPtr->bsRegion ? rdPtr->bsX : 0;
-//	int sy = rdPtr->bsRegion ? rdPtr->bsY : 0;
+//	int dx = rdPtr->b.destX;
+//	int dy = rdPtr->b.destY;
+//	int sx = rdPtr->b.srcUse ? rdPtr->b.srcX : 0;
+//	int sy = rdPtr->b.srcUse ? rdPtr->b.srcY : 0;
 //	int sw = source->GetWidth();
 //	int sh = source->GetHeight();
 //
@@ -955,7 +955,7 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //	}
 //
 //	//Compose alpha
-//	if(rdPtr->bAlphaCompose && rdPtr->bM == BMODE_TRANSP)
+//	if(rdPtr->b.composeAlpha && rdPtr->b.mode == BMODE_TRANSP)
 //	{
 //
 //		//Get dimensions
@@ -989,8 +989,8 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //		//Source region or not
 //		int x1 = sx;
 //		int y1 = sy;
-//		int x2 = rdPtr->bsRegion ? (x1+rdPtr->bsW) : sw;
-//		int y2 = rdPtr->bsRegion ? (y1+rdPtr->bsH) : sh;
+//		int x2 = rdPtr->b.srcUse ? (x1+rdPtr->b.srcW) : sw;
+//		int y2 = rdPtr->b.srcUse ? (y1+rdPtr->b.srcH) : sh;
 //
 //		x1 = max(0,min(sw-1,x1));
 //		y1 = max(0,min(sh-1,y1));
@@ -1002,9 +1002,9 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //			return false;
 //
 //		//Prepare hot spot
-//		int hotX = rdPtr->bhX;
-//		int hotY = rdPtr->bhY;
-//		if(rdPtr->bhMode & 2)
+//		int hotX = rdPtr->b.hotX;
+//		int hotY = rdPtr->b.hotY;
+//		if(rdPtr->b.hotspotMode & 2)
 //		{
 //			hotX = sw/100.0*hotX;
 //			hotY = sh/100.0*hotY;
@@ -1012,18 +1012,18 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //		
 //		//Scale if necessary
 //		cSurface scaled;
-//		if(rdPtr->bStretch)
+//		if(rdPtr->b.StretchMode)
 //		{
-//			scaled.Create(rdPtr->bdW,rdPtr->bdH,source);
+//			scaled.Create(rdPtr->b.destW,rdPtr->b.destH,source);
 //			scaled.SetTransparentColor(source->GetTransparentColor());
-//			source->Stretch(scaled,0,0,rdPtr->bdW,rdPtr->bdH,x1,y1,x2-x1,y2-y1,BMODE_OPAQUE,BOP_COPY,0,STRF_COPYALPHA|(rdPtr->bStretch-1));
+//			source->Stretch(scaled,0,0,rdPtr->b.destW,rdPtr->b.destH,x1,y1,x2-x1,y2-y1,BMODE_OPAQUE,BOP_COPY,0,STRF_COPYALPHA|(rdPtr->b.StretchMode-1));
 //			source = &scaled;
 //			dx += x1;
 //			dy += y1;
-//			hotX *= rdPtr->bdW*1.0f/sw; //(x2-x1) makes hotspot relative to region
-//			hotY *= rdPtr->bdH*1.0f/sh; //(y2-y1)
-//			sw = rdPtr->bdW;
-//			sh = rdPtr->bdH;
+//			hotX *= rdPtr->b.destW*1.0f/sw; //(x2-x1) makes hotspot relative to region
+//			hotY *= rdPtr->b.destH*1.0f/sh; //(y2-y1)
+//			sw = rdPtr->b.destW;
+//			sh = rdPtr->b.destH;
 //			x1 = 0;
 //			y1 = 0;
 //			x2 = sw;
@@ -1036,18 +1036,18 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //
 //		//Rotation is necessary
 //		cSurface rotated;
-//		if(rdPtr->bAngle != 0)
+//		if(rdPtr->b.angle != 0)
 //		{
-//			double angle = rdPtr->bAngle/180.0*PI;
+//			double angle = rdPtr->b.angle/180.0*PI;
 //			cSurface region;
 //			region.Create(x2-x1,y2-y1,source);
 //			source->Blit(region,-x1,-y1,BMODE_OPAQUE,BOP_COPY,0,BLTF_COPYALPHA);
-//			region.CreateRotatedSurface(rotated,rdPtr->bAngle,rdPtr->bAngleResample,source->GetTransparentColor(),FALSE);
+//			region.CreateRotatedSurface(rotated,rdPtr->b.angle,rdPtr->b.angleResample,source->GetTransparentColor(),FALSE);
 //			source = &rotated;
 //			//Rotate the hotspot and adjust the rotated bounding box
 //			dx += x1;
 //			dy += y1;
-//			if(rdPtr->bhMode & 1)
+//			if(rdPtr->b.hotspotMode & 1)
 //				RotatePoint(angle,&hotX,&hotY,region.GetWidth(),region.GetHeight(),&dx,&dy);
 //			sw = rotated.GetWidth();
 //			sh = rotated.GetHeight();
@@ -1058,7 +1058,7 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //		}
 //
 //		//Apply hot spot
-//		if(rdPtr->bhMode & 1)
+//		if(rdPtr->b.hotspotMode & 1)
 //		{
 //			dx -= hotX;
 //			dy -= hotY;
@@ -1109,11 +1109,11 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //
 //		float factor = 1.0f;
 //		//Use user callback
-//		if(rdPtr->bCallback)
-//			rdPtr->callback = rdPtr->bCallback;
+//		if(rdPtr->b.callback)
+//			rdPtr->callback = rdPtr->b.callback;
 //		//Use semi-transparency
-//		else if(rdPtr->bOp == BOP_BLEND)
-//			factor -= rdPtr->bParam/128.0f;
+//		else if(rdPtr->b.operation == BOP_BLEND)
+//			factor -= rdPtr->b.param/128.0f;
 //
 //
 //		for(int y=y1; y<y2; ++y)
@@ -1144,10 +1144,10 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //				COLORREF c;
 //
 //				//Composite (with ink effect)
-//				if(!rdPtr->bCallback)
+//				if(!rdPtr->b.callback)
 //				{
 //					
-//					switch(rdPtr->bOp)
+//					switch(rdPtr->b.operation)
 //					{
 //						case BOP_ADD:
 //							sr = max(0,min(255,sr+dr));
@@ -1236,26 +1236,26 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //	//For hotspots
 //	int dw = sw;
 //	int dh = sh;
-//	if(rdPtr->bStretch)
+//	if(rdPtr->b.StretchMode)
 //	{
-//		dw = rdPtr->bdW;
-//		dh = rdPtr->bdH;
+//		dw = rdPtr->b.destW;
+//		dh = rdPtr->b.destH;
 //	}
 //	if(dw <= 0 || dh <= 0)
 //		return false;
 //
 //	//Recursive call for rotated images
-//	if(rdPtr->bAngle != 0)
+//	if(rdPtr->b.angle != 0)
 //	{
 //		//Create a fake rdPtr with destination (0,0) and angle 0
 //		RUNDATA fakePtr;
 //		memcpy((void*)&fakePtr,rdPtr,sizeof(RUNDATA));
-//		fakePtr.bdX = 0;
-//		fakePtr.bdY = 0;
-//		fakePtr.bAngle = 0;
-//		fakePtr.bCallback = 0;
-//		fakePtr.bOp = BOP_COPY;
-//		fakePtr.bhMode = 0;
+//		fakePtr.b.destX = 0;
+//		fakePtr.b.destY = 0;
+//		fakePtr.b.angle = 0;
+//		fakePtr.b.callback = 0;
+//		fakePtr.b.operation = BOP_COPY;
+//		fakePtr.b.hotspotMode = 0;
 //		//Blit our source image onto a temporary image
 //		cSurface rotsource;
 //		rotsource.Create(dw,dh,source);
@@ -1263,36 +1263,36 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //		{
 //			//Rotate the image and blit onto the destination image
 //			cSurface rotated;
-//			rotsource.CreateRotatedSurface(rotated,rdPtr->bAngle,rdPtr->bAngleResample,source->GetTransparentColor(),FALSE);
-//			fakePtr.bdX = rdPtr->bdX;
-//			fakePtr.bdY = rdPtr->bdY;
-//			fakePtr.bCallback = rdPtr->bCallback;
-//			fakePtr.bOp = rdPtr->bOp;
-//			fakePtr.bStretch = 0;
-//			fakePtr.bsRegion = 0;
-//			fakePtr.bhMode = 0;
-//			if(rdPtr->bhMode & 1)
+//			rotsource.CreateRotatedSurface(rotated,rdPtr->b.angle,rdPtr->b.angleResample,source->GetTransparentColor(),FALSE);
+//			fakePtr.b.destX = rdPtr->b.destX;
+//			fakePtr.b.destY = rdPtr->b.destY;
+//			fakePtr.b.callback = rdPtr->b.callback;
+//			fakePtr.b.operation = rdPtr->b.operation;
+//			fakePtr.b.StretchMode = 0;
+//			fakePtr.b.srcUse = 0;
+//			fakePtr.b.hotspotMode = 0;
+//			if(rdPtr->b.hotspotMode & 1)
 //			{
-//				int hotX = rdPtr->bhX;
-//				int hotY = rdPtr->bhY;
-//				if(rdPtr->bhMode & 2)
+//				int hotX = rdPtr->b.hotX;
+//				int hotY = rdPtr->b.hotY;
+//				if(rdPtr->b.hotspotMode & 2)
 //				{
 //					hotX = sw/100.0f*hotX;
 //					hotY = sh/100.0f*hotY;
 //				}
 //				int dw = sw;
 //				int dh = sh;
-//				if(rdPtr->bStretch)
+//				if(rdPtr->b.StretchMode)
 //				{
-//					dw = rdPtr->bdW;
-//					dh = rdPtr->bdH;
+//					dw = rdPtr->b.destW;
+//					dh = rdPtr->b.destH;
 //					hotX *= dw*1.0f/sw;
 //					hotY *= dh*1.0f/sh;
 //				}
-//				if(rdPtr->bAngle != 0)
-//					RotatePoint(rdPtr->bAngle/180.0*PI,&hotX,&hotY,dw,dh,&fakePtr.bdX,&fakePtr.bdY);
-//				fakePtr.bdX -= hotX;
-//				fakePtr.bdY -= hotY;
+//				if(rdPtr->b.angle != 0)
+//					RotatePoint(rdPtr->b.angle/180.0*PI,&hotX,&hotY,dw,dh,&fakePtr.b.destX,&fakePtr.b.destY);
+//				fakePtr.b.destX -= hotX;
+//				fakePtr.b.destY -= hotY;
 //			}
 //			return Blit(&rotated,dest,&fakePtr);
 //		}
@@ -1300,19 +1300,19 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //	}
 //
 //	//No rotation, but apply hotspot
-//	if(rdPtr->bhMode & 1)
+//	if(rdPtr->b.hotspotMode & 1)
 //	{
-//		dx -= rdPtr->bhX*dw*1.0f/sw;
-//		dy -= rdPtr->bhY*dh*1.0f/sh;
+//		dx -= rdPtr->b.hotX*dw*1.0f/sw;
+//		dy -= rdPtr->b.hotY*dh*1.0f/sh;
 //	}
 //
 //	//Use region if necessary
-//	if(rdPtr->bsRegion)
+//	if(rdPtr->b.srcUse)
 //	{
 //		sx = max(0,min(sw,sx));
 //		sy = max(0,min(sh,sy));
-//		sw = max(0,min(rdPtr->bsW,sw));
-//		sh = max(0,min(rdPtr->bsH,sh));
+//		sw = max(0,min(rdPtr->b.srcW,sw));
+//		sh = max(0,min(rdPtr->b.srcH,sh));
 //	}
 //	//Just to make sure...
 //	else
@@ -1324,35 +1324,35 @@ DWORD FindFilter(CImageFilterMgr* pImgMgr, TCHAR* file,bool isext)
 //	}
 //
 //	//Blitting
-//	if(!rdPtr->bStretch)
+//	if(!rdPtr->b.StretchMode)
 //	{
 //		//Filter callback blit
-//		if(rdPtr->bCallback)
+//		if(rdPtr->b.callback)
 //		{
-//			rdPtr->callback = rdPtr->bCallback;
-//			return source->FilterBlit(*dest,dx,dy,sx,sy,sw,sh,rdPtr->bM,CallBlitProc,(LPARAM)rdPtr);
+//			rdPtr->callback = rdPtr->b.callback;
+//			return source->FilterBlit(*dest,dx,dy,sx,sy,sw,sh,rdPtr->b.mode,CallBlitProc,(LPARAM)rdPtr);
 //		}
 //
 //		//Operation blit
-//		if(rdPtr->bProcOp)
-//			return source->FilterBlit(*dest,dx,dy,sx,sy,sw,sh,rdPtr->bM,OpBlitProc,(LPARAM)rdPtr);
+//		if(rdPtr->b.procOp)
+//			return source->FilterBlit(*dest,dx,dy,sx,sy,sw,sh,rdPtr->b.mode,OpBlitProc,(LPARAM)rdPtr);
 //
 //		//Simple blit
 //		return source->Blit(*dest,dx,dy,sx,sy,sw,sh,
-//			rdPtr->bM,rdPtr->bOp,rdPtr->bParam,rdPtr->bFlags);
+//			rdPtr->b.mode,rdPtr->b.operation,rdPtr->b.param,rdPtr->b.flags);
 //	}
 //	//Stretching
 //	else
 //	{
 //		int strf = 0;
 //		//Resampling
-//		if(rdPtr->bStretch==2) strf |= STRF_RESAMPLE;
-//		else if(rdPtr->bStretch==3) strf |= STRF_RESAMPLE_TRANSP;
+//		if(rdPtr->b.StretchMode==2) strf |= STRF_RESAMPLE;
+//		else if(rdPtr->b.StretchMode==3) strf |= STRF_RESAMPLE_TRANSP;
 //		//Copy alpha
-//		if(rdPtr->bFlags==BLTF_COPYALPHA)
+//		if(rdPtr->b.flags==BLTF_COPYALPHA)
 //			strf |= STRF_COPYALPHA;
 //		//Stretch
-//		return source->Stretch(*dest,dx,dy,rdPtr->bdW,rdPtr->bdH,sx,sy,sw,sh,
-//			rdPtr->bM,rdPtr->bOp,rdPtr->bParam,strf);
+//		return source->Stretch(*dest,dx,dy,rdPtr->b.destW,rdPtr->b.destH,sx,sy,sw,sh,
+//			rdPtr->b.mode,rdPtr->b.operation,rdPtr->b.param,strf);
 //	}
 //}

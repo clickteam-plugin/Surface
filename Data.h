@@ -80,6 +80,33 @@ typedef	vector<PolyCoord>		PolyPoints;
 struct OvlStruct;
 typedef struct OvlStruct Overlay;
 
+struct BlitSet
+{
+	BlitMode			mode;
+	BlitOp				operation;
+	LPARAM				param;
+	DWORD				flags;
+	int					destX;
+	int					destY;
+	int					destW;
+	int					destH;
+	int					StretchMode;
+	int					srcX;
+	int					srcY;
+	int					srcW;
+	int					srcH;
+	bool				srcUse;
+	int					angle;
+	bool				angleResample;
+	TCHAR				callback[32];
+	TCHAR				procOp[4];
+	float				procOpSrc;
+	bool				composeAlpha;
+	int					hotX;
+	int					hotY;
+	int					hotspotMode;
+};
+
 // --------------------------------
 // RUNNING OBJECT DATA STRUCTURE
 // --------------------------------
@@ -108,29 +135,9 @@ typedef struct tagRDATA
 	//The default image depth
 	int					depth;
 	//Internal blit
-	BlitMode			bM;
-	BlitOp				bOp;
-	LPARAM				bParam;
-	DWORD				bFlags;
-	int					bdX;
-	int					bdY;
-	int					bdW;
-	int					bdH;
-	int					bStretch;
-	int					bsX;
-	int					bsY;
-	int					bsW;
-	int					bsH;
-	bool				bsRegion;
-	int					bAngle;
-	bool				bAngleResample;
-	TCHAR*				bCallback;
-	char*				bProcOp;
-	float				bProcOpSrc;
-	bool				bAlphaCompose;
-	int					bhX;
-	int					bhY;
-	int					bhMode;
+	BlitSet				b;
+	BlitSet				blitStack[5];
+	int					blitStackCursor;
 	//Callback
 	COLORREF			colSrc;
 	COLORREF			colDest;
