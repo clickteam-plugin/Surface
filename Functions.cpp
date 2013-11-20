@@ -566,9 +566,7 @@ void UpdateHotspot(LPRDATA rdPtr)
 #ifdef HWABETA
 		cSurface::GetSizeOfRotatedRect(&width, &height, *(float*)&rdPtr->rc.rcAngle); // What
 #else
-		printf("UH: Scaled: %d,%d\n", width, height);
 		cSurface::GetSizeOfRotatedRect(&width, &height, rdPtr->rc.rcAngle);
-		printf("UH: Rotated: %d,%d\n", width, height);
 #endif
 	}
 
