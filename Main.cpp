@@ -955,7 +955,7 @@ ACTION(
 	/* Params */		(2,PARAM_STRING,PARAM_OPERATOR,PARAM_COLOUR,_T("Color"))
 ) {
 	TargetExists();
-	char* op = (char*)GetStr();
+	TCHAR* op = GetStr();
 	COLORREF col = GetCol();
 	float cr = GetRValue(col);
 	float cg = GetGValue(col);
@@ -3574,7 +3574,7 @@ ACTION(
 	/* Params */		(3,PARAM_STRING,PARAM_OPERATOR,PARAM_NUMBER,_T("Operand"),PARAM_STRING,_T("Channels, add together (r, g, b, a)"))
 ) {
 	TargetExists();
-	char* op = (char*)GetStr();
+	TCHAR* op = GetStr();
 	float val; LoadFloat(val);
 	TCHAR* ch = GetStr();
 	bool dor = _tcschr(ch,'r');
