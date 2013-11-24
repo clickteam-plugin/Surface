@@ -595,7 +595,7 @@ ACTION(
                         tmp.Clone(*TargetImg);
                         //Create from prototype and Blit
                         cSurface* proto = 0;
-                        GetSurfacePrototype(&proto,rdPtr->depth,ST_MEMORYWITHDC,SD_DIB);
+                        GetSurfacePrototype(&proto,rdPtr->depth,TargetImg->GetType(),TargetImg->GetDriver());
                         TargetImg->Delete();
                         TargetImg->Create(w,h,proto);
                         int flag = STRF_COPYALPHA|(rdPtr->rs.rsEffect&EFFECTFLAG_ANTIALIAS?STRF_RESAMPLE:0);
@@ -2292,10 +2292,10 @@ ACTION(
 	cSurface tmp;
 	tmp.Clone(*TargetImg);
 	//Resize target
+	cSurface* proto = 0;
+	GetSurfacePrototype(&proto,rdPtr->depth,TargetImg->GetType(),TargetImg->GetDriver());
 	COLORREF transColor = TargetImg->GetTransparentColor();
 	TargetImg->Delete();
-	cSurface* proto = 0;
-	GetSurfacePrototype(&proto,rdPtr->depth,ST_MEMORYWITHDC,SD_DIB);
 	TargetImg->Create(x2-x1,y2-y1,proto);
 	TargetImg->Fill(transColor);
 	TargetImg->SetTransparentColor(transColor);
