@@ -955,7 +955,7 @@ ACTION(
 	/* Params */		(2,PARAM_STRING,PARAM_OPERATOR,PARAM_COLOUR,_T("Color"))
 ) {
 	TargetExists();
-	TCHAR* op = GetStr();
+	char* op = (char*)GetStr();
 	COLORREF col = GetCol();
 	float cr = GetRValue(col);
 	float cg = GetGValue(col);
@@ -1660,6 +1660,9 @@ ACTION(
 		if(!x2) x2 = x1;
 		if(!y2) y2 = y1;
 	}
+
+	// Draw
+	TargetImg->DrawText(text,-1,&rect,rdPtr->hFlags,color,rdPtr->hFont,rdPtr->bM,rdPtr->bOp,rdPtr->bParam,useAA);
 	
 	if Current(rdPtr->targetId)
 		RectChanged(x1,y1,x2,y2);
@@ -3574,7 +3577,7 @@ ACTION(
 	/* Params */		(3,PARAM_STRING,PARAM_OPERATOR,PARAM_NUMBER,_T("Operand"),PARAM_STRING,_T("Channels, add together (r, g, b, a)"))
 ) {
 	TargetExists();
-	TCHAR* op = GetStr();
+	char* op = (char*)GetStr();
 	float val; LoadFloat(val);
 	TCHAR* ch = GetStr();
 	bool dor = _tcschr(ch,'r');
