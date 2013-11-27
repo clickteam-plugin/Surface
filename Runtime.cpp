@@ -279,7 +279,10 @@ short WINAPI DLLExport DestroyRunObject(LPRDATA rdPtr, long fast)
 {
 	//Wait unitl thread is done
 	if(rdPtr->ioHandle)
+	{
 		WaitForSingleObject(rdPtr->ioHandle,INFINITE);
+		CloseHandle(rdPtr->ioHandle);
+	}
 	//Collision mask
 	MaskChanged();
 	//Fill data
@@ -326,14 +329,21 @@ short WINAPI DLLExport DestroyRunObject(LPRDATA rdPtr, long fast)
 // 
 short WINAPI DLLExport HandleRunObject(LPRDATA rdPtr)
 {
-	if(rdPtr->rc.rcChanged)
+	if (rdPtr->ioHandle)
+	{
+		DWORD code;
+		if (GetExitCodeThread(rdPtr->ioHandle, &code) && code != STILL_ACTIVE)
+		{
+			CloseHandle(rdPtr->ioHandle);
+			rdPtr->ioHandle = NULL;
+		}
+	}
+
+	if (rdPtr->rc.rcChanged)
 		return REFLAG_DISPLAY;
 
-	UpdateHotspot(rdPtr);
-
-
-	rdPtr->rHo.hoImgWidth = CurrentImg->GetWidth()*abs(rdPtr->rc.rcScaleX);
-	rdPtr->rHo.hoImgHeight = CurrentImg->GetHeight()*abs(rdPtr->rc.rcScaleY);
+	//rdPtr->rHo.hoImgWidth = CurrentImg->GetWidth()*abs(rdPtr->rc.rcScaleX);
+	//rdPtr->rHo.hoImgHeight = CurrentImg->GetHeight()*abs(rdPtr->rc.rcScaleY);
 
 	return 0;
 }

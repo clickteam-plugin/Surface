@@ -181,6 +181,7 @@ typedef struct tagRDATA
 	TCHAR*				ioFile;
 	DWORD				ioFilter;
 	HANDLE				ioHandle;
+	bool				ioSave;
 	//Stored image for quick undo
 	cSurface*			stored;
 	// Misc

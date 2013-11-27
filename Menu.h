@@ -39,6 +39,8 @@
 		ITEM(5,"Saving succeeded?")
 		SEPARATOR
 		ITEM(17,"File I/O in progress?")
+		ITEM(19,"File is being loaded?")
+		ITEM(18,"File is being saved?")
 		SEPARATOR
 		ITEM(15,"Buffer is locked?")
 	SUB_END

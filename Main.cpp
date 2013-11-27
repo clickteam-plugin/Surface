@@ -219,6 +219,23 @@ CONDITION(
 	return rdPtr->ioHandle != 0;
 }
 
+CONDITION(
+	/* ID */			18,
+	/* Name */			_T("%o: File is being saved"),
+	/* Flags */			EVFLAGS_ALWAYS|EVFLAGS_NOTABLE,
+	/* Params */		(0)
+) {
+	return rdPtr->ioHandle != 0 && rdPtr->ioSave;
+}
+
+CONDITION(
+	/* ID */			19,
+	/* Name */			_T("%o: File is being loaded"),
+	/* Flags */			EVFLAGS_ALWAYS|EVFLAGS_NOTABLE,
+	/* Params */		(0)
+) {
+	return rdPtr->ioHandle != 0 && !rdPtr->ioSave;
+}
 // ============================================================================
 //
 // ACTIONS
@@ -656,6 +673,7 @@ void __cdecl SurfSaveImage(LPRDATA rdPtr)
 	}
 	//Free stuff again
 	free(rdPtr->ioFile);
+	rdPtr->ioFile = 0;
 	rdPtr->ioHandle = 0;
 }
 
@@ -686,6 +704,13 @@ ACTION(
 
 	if(rdPtr->threadedIO)
 	{
+		if (rdPtr->ioHandle)
+		{
+			rdPtr->rRd->GenerateEvent(3);
+			return 0;
+		}
+
+		rdPtr->ioSave = true;
 		rdPtr->ioHandle = rdPtr->rRd->StartThread(SurfSaveImage);
 	}
 	else
@@ -723,7 +748,7 @@ void __cdecl SurfLoadImage(LPRDATA rdPtr)
 		}
 		
 		//Success
-		if(rdPtr->ioHandle)
+		if(rdPtr->threadedIO)
 			rdPtr->rRd->PushEvent(4);
 		else
 			rdPtr->rRd->GenerateEvent(4);
@@ -735,7 +760,7 @@ void __cdecl SurfLoadImage(LPRDATA rdPtr)
 	//Load failed
 	else
 	{
-		if(rdPtr->ioHandle)
+		if(rdPtr->threadedIO)
 			rdPtr->rRd->PushEvent(2);
 		else
 			rdPtr->rRd->GenerateEvent(2);
@@ -4288,6 +4313,13 @@ ACTION(
 
 	if(rdPtr->threadedIO)
 	{
+		if (rdPtr->ioHandle)
+		{
+			rdPtr->rRd->GenerateEvent(2);
+			return 0;
+		}
+
+		rdPtr->ioSave = false;
 		rdPtr->ioHandle = rdPtr->rRd->StartThread(SurfLoadImage);
 	}
 	else
