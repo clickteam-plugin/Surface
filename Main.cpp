@@ -1662,7 +1662,7 @@ ACTION(
 	}
 
 	// Draw
-	TargetImg->DrawText(text,-1,&rect,rdPtr->hFlags,color,rdPtr->hFont,rdPtr->bM,rdPtr->bOp,rdPtr->bParam,useAA);
+	TargetImg->DrawText(text, -1, &rect, rdPtr->hFlags, color, rdPtr->hFont, rdPtr->b.mode, rdPtr->b.operation, rdPtr->b.param, useAA);
 	
 	if Current(rdPtr->targetId)
 		RectChanged(x1,y1,x2,y2);
@@ -3067,7 +3067,7 @@ ACTION(
 	int x = GetXPos();
 	int y = GetYPos();
 	float w = GetInt()/2.0f; float h = GetInt()/2.0f;
-	int x1 = x-floor(w); int y1 = y-floor(h); int x2 = x+round(w)+1; int y2 = y+round(h)+1;
+	int x1 = x-floor(w); int y1 = y-floor(h); int x2 = x+ceil(w)+1; int y2 = y+ceil(h)+1;
 	COLORREF fill = GetCol();
 	int thick = GetInt();
 	COLORREF out = GetCol();
@@ -3088,7 +3088,7 @@ ACTION(
 	TargetExists();
 	int x = GetXPos(); int y = GetYPos();
 	float w = GetInt()/2.0f; float h = GetInt()/2.0f;
-	int x1 = x-floor(w); int y1 = y-floor(h); int x2 = x+round(w)+1; int y2 = y+round(h)+1;
+	int x1 = x-floor(w); int y1 = y-floor(h); int x2 = x+ceil(w)+1; int y2 = y+ceil(h)+1;
 	string fill = string(GetStr());
 	int thick = GetInt();
 	string out = string(GetStr());
@@ -4748,7 +4748,7 @@ ACTION(
 	int x = GetXPos();
 	int y = GetYPos();
 	float w = GetInt()/2.0f; float h = GetInt()/2.0f;
-	int x1 = x-floor(w); int y1 = y-floor(h); int x2 = x+round(w)+1; int y2 = y+round(h)+1;
+	int x1 = x-floor(w); int y1 = y-floor(h); int x2 = x+ceil(w)+1; int y2 = y+ceil(h)+1;
 	COLORREF fill = GetCol();
 
 	TargetImg->Ellipse(x1,y1,x2,y2,fill,0,0,TRUE);
