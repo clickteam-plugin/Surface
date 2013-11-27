@@ -146,7 +146,7 @@
 		SEPARATOR
 		ITEM(77,"Delete")
 	SUB_END
-	SUB_START("Polygons")
+	SUB_START("Points")
 		ITEM(142,"Add point")
 		ITEM(33,"Add points from string")
 		SEPARATOR
