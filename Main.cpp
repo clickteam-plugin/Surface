@@ -428,8 +428,8 @@ ACTION(
 	TargetExists();
 	int x1 = GetXPos();
 	int y1 = GetYPos();
-	int x2 = GetXPos();
-	int y2 = GetYPos();
+	int x2 = GetXPos() + 1;
+	int y2 = GetYPos() + 1;
 	COLORREF fill = GetCol();
 	int thick = GetInt();
 	COLORREF out = GetCol();
@@ -892,7 +892,7 @@ ACTION(
 }
 ACTION(
 	/* ID */			21,
-	/* Name */			_T("Reverse X"),
+	/* Name */			_T("Flip horizontally"),
 	/* Flags */			0,
 	/* Params */		(0)
 ) {
@@ -905,7 +905,7 @@ ACTION(
 }
 ACTION(
 	/* ID */			22,
-	/* Name */			_T("Reverse Y"),
+	/* Name */			_T("Flip vertically"),
 	/* Flags */			0,
 	/* Params */		(0)
 ) {
@@ -1548,8 +1548,8 @@ ACTION(
 	TargetExists();
 	int x1 = GetXPos();
 	int y1 = GetYPos();
-	int x2 = GetXPos();
-	int y2 = GetYPos();
+	int x2 = GetXPos() + 1;
+	int y2 = GetYPos() + 1;
 	string fill = string(GetStr());
 	int thick = GetInt();
 	string out = string(GetStr());
@@ -1565,7 +1565,7 @@ ACTION(
 	//rdPtr->userYOff = min(y1,y2);
 
 	//Final check: Outline or not?
-	if(useOut)
+	if(useOut)	
 	{
 		TargetImg->Ellipse(x1,y1,x2,y2,
 		useFill?fillData->fill:0,thick, //Fill
@@ -4481,8 +4481,8 @@ ACTION(
 	TargetExists();
 	int x1 = GetXPos();
 	int y1 = GetYPos();
-	int x2 = GetXPos();
-	int y2 = GetYPos();
+	int x2 = GetXPos() + 1;
+	int y2 = GetYPos() + 1;
 	COLORREF fill = GetCol();
 	TargetImg->Ellipse(x1,y1,x2,y2,fill,0,0,TRUE);
 
