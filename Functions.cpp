@@ -289,7 +289,7 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 
 		float factor = 1.0f;
 		//Use user callback
-		if(rdPtr->b.callback)
+		if(rdPtr->b.callback[0])
 			rdPtr->callback = rdPtr->b.callback;
 		//Use semi-transparency
 		else if(rdPtr->b.operation == BOP_BLEND)
@@ -315,12 +315,14 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 				int db = GetBValue(dc);
 				float da = destAlpha->GetPixelFast8(nx,ny)/255.0f;
 
+				printf("%x ", sc);
+
 				//Output
 				float a;
 				COLORREF c;
 
 				//Composite (with ink effect)
-				if(!rdPtr->b.callback)
+				if(!rdPtr->b.callback[0])
 				{
 					
 					switch(rdPtr->b.operation)
