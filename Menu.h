@@ -299,13 +299,6 @@
 		ITEM(170, "Pop settings")
 		SEPARATOR
 		ITEM(0,"~- Position && Size -")
-		SUB_START("Destination")
-			ITEM(41,"Set position")
-			ITEM(66,"Set dimensions")
-			ITEM(116,"Set stretch mode")
-			SEPARATOR
-			ITEM(105,"Set all")
-		SUB_END
 		SUB_START("Source")
 			ITEM(114,"Set position")
 			ITEM(115,"Set dimensions")
@@ -313,6 +306,14 @@
 			SEPARATOR
 			ITEM(146,"Set all")
 		SUB_END
+		SUB_START("Destination")
+			ITEM(41,"Set position")
+			ITEM(66,"Set dimensions")
+			ITEM(116,"Set stretch mode")
+			SEPARATOR
+			ITEM(105,"Set all")
+		SUB_END
+		SEPARATOR
 		SUB_START("Hot spot")
 			ITEM(148,"Set pixels")
 			ITEM(150,"Set percent")
@@ -352,14 +353,14 @@
 	SUB_END
 	SUB_START("Transformations")
 		ITEM(13,"Resize")
-		ITEM(80,"Rotate")
-		SEPARATOR
 		ITEM(78,"Resize canvas")
 		ITEM(23,"Minimize canvas")
 		SEPARATOR
-		ITEM(21,"Reverse X")
-		ITEM(22,"Reverse Y")
+		ITEM(80,"Rotate")
+		ITEM(21,"Flip horizontally")
+		ITEM(22,"Flip vertically")
 		ITEM(93,"Scroll")
+		SEPARATOR
 	SUB_END
 	ITEM(0,"~- Drawing -")
 	SUB_START("With color")
