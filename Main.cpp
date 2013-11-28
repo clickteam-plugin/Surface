@@ -768,6 +768,7 @@ void __cdecl SurfLoadImage(LPRDATA rdPtr)
 	//Delete temp
 	delete psf;
 	free(rdPtr->ioFile);
+	rdPtr->ioFile = 0;
 	rdPtr->ioHandle = 0;
 }
 
