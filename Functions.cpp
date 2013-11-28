@@ -315,8 +315,6 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 				int db = GetBValue(dc);
 				float da = destAlpha->GetPixelFast8(nx,ny)/255.0f;
 
-				printf("%x ", sc);
-
 				//Output
 				float a;
 				COLORREF c;
@@ -565,9 +563,7 @@ void UpdateHotspot(LPRDATA rdPtr)
 #ifdef HWABETA
 		cSurface::GetSizeOfRotatedRect(&width, &height, *(float*)&rdPtr->rc.rcAngle); // What
 #else
-		printf("UH: Scaled: %d,%d\n", width, height);
 		cSurface::GetSizeOfRotatedRect(&width, &height, rdPtr->rc.rcAngle);
-		printf("UH: Rotated: %d,%d\n", width, height);
 #endif
 	}
 
