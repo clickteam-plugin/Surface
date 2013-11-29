@@ -4830,6 +4830,47 @@ ACTION(
 	}
 	return 0;
 }
+
+ACTION(
+	/* ID */			171,
+	/* Name */			_T("Enable blit alpha composition"),
+	/* Flags */			0,
+	/* Params */		(0)
+) {
+	rdPtr->b.composeAlpha = true;
+	return 0;
+}
+	
+ACTION(
+	/* ID */			172,
+	/* Name */			_T("Disable blit alpha composition"),
+	/* Flags */			0,
+	/* Params */		(0)
+) {
+	rdPtr->b.composeAlpha = false;
+	return 0;
+}
+
+ACTION(
+	/* ID */			173,
+	/* Name */			_T("Enable blit transparency"),
+	/* Flags */			0,
+	/* Params */		(0)
+) {
+	rdPtr->b.mode = BMODE_TRANSP;
+	return 0;
+}
+	
+ACTION(
+	/* ID */			174,
+	/* Name */			_T("Disable blit transparency"),
+	/* Flags */			0,
+	/* Params */		(0)
+) {
+	rdPtr->b.mode = BMODE_OPAQUE;
+	return 0;
+}
+
 // ============================================================================
 //
 // EXPRESSIONS

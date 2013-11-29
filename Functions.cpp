@@ -160,7 +160,7 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 #endif
 
 	//Compose alpha
-	if(rdPtr->b.composeAlpha && rdPtr->b.mode == BMODE_TRANSP)
+	if(rdPtr->b.composeAlpha && rdPtr->b.mode == BMODE_TRANSP && source->GetType() < ST_HWA_RTTEXTURE && dest->GetType() < ST_HWA_RTTEXTURE)
 	{
 
 		//Get dimensions
@@ -292,7 +292,7 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 		if(rdPtr->b.callback[0])
 			rdPtr->callback = rdPtr->b.callback;
 		//Use semi-transparency
-		else if(rdPtr->b.operation == BOP_BLEND)
+		else
 			factor *= ((rdPtr->b.param & 0xff000000) >> 24)/255.0f;
 
 		for(int x=x1; x<x2; ++x)
@@ -322,6 +322,9 @@ bool Blit(cSurface* source,cSurface* dest,LPRDATA rdPtr)
 				//Composite (with ink effect)
 				if(!rdPtr->b.callback[0])
 				{
+					sr *= GetBValue(rdPtr->b.param)/255.0f;
+					sg *= GetGValue(rdPtr->b.param)/255.0f;
+					sb *= GetRValue(rdPtr->b.param)/255.0f;
 					
 					switch(rdPtr->b.operation)
 					{

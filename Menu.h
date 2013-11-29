@@ -298,30 +298,36 @@
 		ITEM(169, "Push settings")
 		ITEM(170, "Pop settings")
 		SEPARATOR
-		ITEM(0,"~- Position && Size -")
 		SUB_START("Source")
+			ITEM(0,"~- Position && Size -")
 			ITEM(114,"Set position")
 			ITEM(115,"Set dimensions")
 			ITEM(117,"Set region flag")
-			SEPARATOR
 			ITEM(146,"Set all")
 		SUB_END
 		SUB_START("Destination")
+			ITEM(0,"~- Position && Size -")
 			ITEM(41,"Set position")
 			ITEM(66,"Set dimensions")
 			ITEM(116,"Set stretch mode")
-			SEPARATOR
 			ITEM(105,"Set all")
-		SUB_END
-		SEPARATOR
-		SUB_START("Hot spot")
+			SEPARATOR
+			ITEM(0,"~- Rotation -")
+			ITEM(147,"Set angle")
+			ITEM(151,"Set quality")
+			SEPARATOR
+			ITEM(0,"~- Hot spot -")
 			ITEM(148,"Set pixels")
 			ITEM(150,"Set percent")
-			//ITEM(149,"Set flag")
 		SUB_END
-		SUB_START("Angle")
-			ITEM(147,"Set angle")
-			ITEM(151,"Set rotation quality")
+		SEPARATOR
+		SUB_START("Transparency")
+			ITEM(173, "Enable")
+			ITEM(174, "Disable")
+		SUB_END
+		SUB_START("Alpha composition")
+			ITEM(171, "Enable")
+			ITEM(172, "Disable")
 		SUB_END
 		SEPARATOR
 		SUB_START("Effect")
@@ -331,15 +337,15 @@
 			//	//ITEM(39,"Use semi-transparency")
 			SEPARATOR
 			ITEM(168, "Set alpha")
-			ITEM(157, "Set tint (HWA only)")
+			ITEM(157, "Set tint")
 			//SUB_END
 			SEPARATOR
 			ITEM(136,"Set callback (overrides effect)")
 		SUB_END
-		SUB_START("Transparency")
-			ITEM(38,"Set alpha mode")
-			ITEM(37,"Set transparency")
-		SUB_END
+		//SUB_START("Transparency")
+		//	ITEM(38,"Set alpha mode")
+		//	ITEM(37,"Set transparency")
+		//SUB_END
 	SUB_END
 	SUB_START("Callbacks")
 		ITEM(95,"Loop through image")
