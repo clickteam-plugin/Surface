@@ -3603,7 +3603,7 @@ ACTION(
 	/* Params */		(3,PARAM_STRING,PARAM_OPERATOR,PARAM_NUMBER,_T("Operand"),PARAM_STRING,_T("Channels, add together (r, g, b, a)"))
 ) {
 	TargetExists();
-	char* op = (char*)GetStr();
+	TCHAR* op = (TCHAR*)GetStr();
 	float val; LoadFloat(val);
 	TCHAR* ch = GetStr();
 	bool dor = _tcschr(ch,'r');
