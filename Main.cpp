@@ -981,7 +981,7 @@ ACTION(
 	/* Params */		(2,PARAM_STRING,PARAM_OPERATOR,PARAM_COLOUR,_T("Color"))
 ) {
 	TargetExists();
-	char* op = (char*)GetStr();
+	TCHAR* op = (TCHAR*)GetStr();
 	COLORREF col = GetCol();
 	float cr = GetRValue(col);
 	float cg = GetGValue(col);
