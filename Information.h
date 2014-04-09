@@ -8,7 +8,7 @@
 #define	ObjectCopyright		"Copyright © 2010 - 2013 by Lukas Meller aka Looki"
 #define	ObjectComment		"Flexible pixel canvas for image manipulation and complex effects"
 #define	ObjectURL			""
-#define	ObjectHelp			"Help\\Surface.chm"
+#define	ObjectHelp			_T("Help\\Surface.chm")
 
 // If you register your object with Clickteam, change this to the ID you were given
 #define ObjectRegID			REGID_PRIVATE
