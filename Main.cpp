@@ -4351,7 +4351,9 @@ ACTION(
 		ActionFunc4(rdPtr, 1, 0);
 
 	cSurface* proto;
-	GetSurfacePrototype(&proto, TargetImg->GetDepth(), ST_HWA_ROMTEXTURE, SD_D3D9);
+	LPSURFACE wSurf = WinGetSurface((int)rdPtr->rHo.hoAdRunHeader->rhIdEditWin);
+	int sfDrv = wSurf->GetDriver();
+	GetSurfacePrototype(&proto, TargetImg->GetDepth(), ST_HWA_ROMTEXTURE, sfDrv);
 
 	// convert
 	cSurface* hwa = new cSurface;
@@ -4394,14 +4396,16 @@ ACTION(
 		ActionFunc4(rdPtr, 1, 0);
 
 	cSurface* proto;
-	GetSurfacePrototype(&proto, TargetImg->GetDepth(), ST_HWA_RTTEXTURE, SD_D3D9);
+	LPSURFACE wSurf = WinGetSurface((int)rdPtr->rHo.hoAdRunHeader->rhIdEditWin);
+	int sfDrv = wSurf->GetDriver();
+	GetSurfacePrototype(&proto, TargetImg->GetDepth(), ST_HWA_RTTEXTURE, sfDrv);
 
 	// convert
 	cSurface* hwa = new cSurface;
 	hwa->Create(rdPtr->target->GetWidth(), rdPtr->target->GetHeight(), proto);
 
 	//// Create temp. texture to draw old image onto target
-	//GetSurfacePrototype(&proto, TargetImg->GetDepth(), ST_HWA_ROMTEXTURE, SD_D3D9);
+	//GetSurfacePrototype(&proto, TargetImg->GetDepth(), ST_HWA_ROMTEXTURE, sfDrv);
 	//cSurface texture;
 	//texture.Create(TargetImg->GetWidth(), TargetImg->GetHeight(), proto);
 	//TargetImg->Blit(texture);

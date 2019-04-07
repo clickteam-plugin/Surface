@@ -135,7 +135,7 @@ short WINAPI DLLExport CreateRunObject(LPRDATA rdPtr, LPEDATA edPtr, fpcob cobPt
 	//Running HWA?
 	LPSURFACE wSurf = WinGetSurface((int)rhPtr->rhIdEditWin);
 	int nDrv = wSurf->GetDriver();
-	rdPtr->isHWA = nDrv == SD_D3D8 || nDrv == SD_D3D9;
+	rdPtr->isHWA = nDrv >= SD_3DFX;
 		
 	//Display surface not necessary by default
 	rdPtr->display = 0;
