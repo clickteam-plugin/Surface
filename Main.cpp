@@ -959,7 +959,7 @@ ACTION(
 	/* Params */		(5,PARAM_NUMBER,_T("X1"),PARAM_NUMBER,_T("Y1"),PARAM_NUMBER,_T("X2"),PARAM_NUMBER,_T("Y2"),PARAM_NUMBER,_T("Alpha (0-255)"))
 ) {
 	TargetExists();
-	ActionFunc25(rdPtr, 1, 0);
+	ActionFunc4(rdPtr, 1, 0);
 	if(!TargetImg->HasAlpha()) return 0;
 	int x1 = GetXPos();
 	int y1 = GetYPos();
