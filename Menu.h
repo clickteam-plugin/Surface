@@ -387,12 +387,12 @@
 		SUB_END
 		SUB_START("Draw ellipse")
 			ITEM(0,"~Simple:")
-			ITEM(8,"Via bounding box")
-			ITEM(101,"Via center and size")
-			SEPARATOR
-			ITEM(0,"~With outline:")
 			ITEM(158,"Via bounding box")
 			ITEM(167,"Via center and size")
+			SEPARATOR
+			ITEM(0,"~With outline:")
+			ITEM(8,"Via bounding box")
+			ITEM(101,"Via center and size")
 		SUB_END
 		SUB_START("Draw polygon")
 			ITEM(160,"Simple")
