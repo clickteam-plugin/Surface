@@ -4875,6 +4875,354 @@ ACTION(
 	return 0;
 }
 
+
+
+//___________________________________________________________________________________________________
+
+ACTION(
+	/* ID */			175,
+	/* Name */			_T("%o: Load raw data from %0  with alpha channel %1"),
+	/* Flags */			0,
+	/* Params */		(2,PARAM_NUMBER,_T("Source address"),PARAM_NUMBER,_T("Select (0 - 24bpp RGB, 1 - 32 bpp RGBA, 2 - 32 bpp alpha channel)"))
+) {
+	DWORD src = GetInt();
+	char RGBA = GetInt();
+	bool hasAlpha = RGBA;
+
+	const int height = TargetImg->GetHeight();
+	const int width = TargetImg->GetWidth();
+
+	ActionFunc4(rdPtr, 1, 0); //Create alpha channel
+
+	cSurface* alpha = TargetImg->GetAlphaSurface();
+	BYTE pixel[4] = { 0, 0, 0, 255 };
+
+	for ( int y=0; y<height; y++ )
+		for ( int x=0; x<width; x++ )
+		{
+			memcpy( &pixel, (DWORD*)(src+(y*width+x)*(3+hasAlpha)), 3+hasAlpha );
+
+			switch (RGBA)
+			{
+				case 0:
+					TargetImg->SetPixel( x, y, pixel[0],pixel[1],pixel[2] );
+				break;
+				case 1:
+				{
+					TargetImg->SetPixel( x, y, pixel[0],pixel[1],pixel[2] );
+					alpha->SetPixel( x, y, pixel[3] );
+				}
+				break;
+				case 2:
+				{
+					TargetImg->SetPixel( x, y, pixel[3],pixel[3],pixel[3] );
+					alpha->SetPixel( x, y, 0xFF );
+				}
+				break;
+			}
+		}
+
+	if (!RGBA)
+		alpha->Fill(0xFF);
+	TargetImg->ReleaseAlphaSurface(alpha);
+	if Current(rdPtr->targetId)
+		ImageChanged();
+
+	return 0;
+}
+
+//___________________________________________________________________________________________________
+
+ACTION(
+	/* ID */			176,
+	/* Name */			_T("%o: Load bitmap from %0  Only alpha channel %1"),
+	/* Flags */			0,
+	/* Params */		(2,PARAM_NUMBER,_T("Source address"),PARAM_NUMBER,_T("0 - All channels, 1 - Only alpha channel"))
+) {	
+	DWORD src = GetInt();
+	unsigned char onlyAlpha = GetInt();
+	
+	if ( *(SHORT*)src = 0x4D42 ) // BITMAP
+	{
+		// BMP header
+		#pragma pack(push, 1)
+		#pragma pack(1)
+		struct BMPfheader // BMP file header structure
+		{
+			short magic; // BM
+			unsigned int fileSize;
+			unsigned short reserved1;
+			unsigned short reserved2;
+			unsigned int startingAddress;
+		} BMPfheader;
+		struct BMPiheader // BMP file info structure
+		{
+			unsigned int headerSize;
+			signed int width;
+			signed int height;
+			unsigned short colorPlanes;
+			unsigned short bitsPerPixel;
+			unsigned int compression;
+			unsigned int imageSize;
+			signed int hImageRes;
+			signed int vImageRes;
+			unsigned int colourMapLength;
+			unsigned int importantColors;
+		} BMPiheader;
+		#pragma pack(pop)
+		// fill by data
+		memcpy(&BMPfheader, (void*)src, sizeof(BMPfheader));
+		memcpy(&BMPiheader, (void*)(src+sizeof(BMPfheader)), sizeof(BMPiheader));
+	
+		int bitMasks[4] = { 0, 0, 0, 0 }; // for 16 bits and 32 bits
+		if (BMPiheader.compression == 3)
+			memcpy((int*)&bitMasks, (int*)(src+sizeof(BMPfheader)+sizeof(BMPiheader)), sizeof(bitMasks));
+	
+		const unsigned char FullHeaderSize = sizeof(BMPfheader)+BMPiheader.headerSize;
+	
+		//ActionFunc21(rdPtr, width, height); //why it isn't working, below some workaround
+		ImageInRange(rdPtr->targetId);
+	
+		if( abs(BMPiheader.width) && abs(BMPiheader.height) )
+		{
+			//Resize by cloning
+			if(TargetImg->IsValid())
+			{
+				int ow = TargetImg->GetWidth();
+				int oh = TargetImg->GetHeight();
+				cSurface tmp;
+				tmp.Clone(*TargetImg);
+				//Create from prototype and Blit
+				cSurface* proto = 0;
+				GetSurfacePrototype(&proto,rdPtr->depth,TargetImg->GetType(),TargetImg->GetDriver());
+				TargetImg->Delete();
+				TargetImg->Create(abs(BMPiheader.width),abs(BMPiheader.height),proto);
+				int flag = STRF_COPYALPHA|(rdPtr->rs.rsEffect&EFFECTFLAG_ANTIALIAS?STRF_RESAMPLE:0);
+				tmp.Stretch(*TargetImg,0,0,abs(BMPiheader.width),abs(BMPiheader.height),0,0,ow,oh,BMODE_OPAQUE,BOP_COPY,0,flag);
+			}
+			//Invalid, create new from prototype
+			else
+			{
+				cSurface* proto = 0;
+				GetSurfacePrototype(&proto,rdPtr->depth,ST_MEMORYWITHDC,SD_DIB);
+				TargetImg->Create(abs(BMPiheader.width),abs(BMPiheader.height),proto);
+				TargetImg->Fill(BLACK);
+				rdPtr->targetValid = true;
+			}
+			//Update display image
+			if Current(rdPtr->targetId)
+			{
+				CurrentImg = TargetImg;
+				UpdateHotspot(rdPtr);
+				ImageChanged();
+			}	
+	    }
+	    else if(TargetImg->IsValid())
+	    {
+			TargetImg->Delete();
+			rdPtr->targetValid = false;
+			if Current(rdPtr->targetId)
+			{
+				rdPtr->rHo.hoImgWidth = 0;
+				rdPtr->rHo.hoImgHeight = 0;
+				rdPtr->rHo.hoImgXSpot = 0;
+				rdPtr->rHo.hoImgYSpot = 0;
+				ImageChanged();
+			}	
+	    }
+	
+		ActionFunc4(rdPtr, 1, 0); //Create alpha channel
+		cSurface* alpha = TargetImg->GetAlphaSurface();
+		COLORREF col;
+			
+		const int RowSize = ((BMPiheader.bitsPerPixel*BMPiheader.width+31)/32)*4;
+	
+		if (onlyAlpha)
+			TargetImg->Fill(WHITE);
+		else
+			alpha->Fill(255);
+		switch (BMPiheader.bitsPerPixel)
+		{
+			case 1: // OMG, monochrome bitmap
+				for ( int y=0; y<BMPiheader.height; y++ )
+					for ( int x=0; x<RowSize*8; x++ )
+					{
+						const unsigned int vflip = (BMPiheader.height+~y);
+						const unsigned int Cursor = vflip*RowSize*8+x;
+						unsigned char pxlArrayIndex = *(BYTE*)(src+FullHeaderSize + 2*4 + Cursor/8); // Eight pixels in one pack
+						pxlArrayIndex = pxlArrayIndex >> (7-Cursor%8) & 1; // Extract pixels from the pack
+							
+						if (onlyAlpha)
+						{
+							CONST BYTE pixel = *(BYTE*)(src+FullHeaderSize + pxlArrayIndex*4+3);
+							col = pixel | (pixel<<8) | (pixel<<16);	
+						}
+						else
+						{
+							col = _byteswap_ulong(*(DWORD*)(src+FullHeaderSize + pxlArrayIndex*4)) >> 8;
+							alpha->SetPixel( x, y, *(BYTE*)(src+FullHeaderSize + pxlArrayIndex*4+3) );
+						}
+	
+						if ( x<BMPiheader.width )
+							TargetImg->SetPixelFast( x, y, col );
+					}
+			break;
+	
+			case 4: // 16 colors bitmap support impossible in MMF?
+				if (BMPiheader.compression) break;
+	
+				for ( int y=0; y<abs(BMPiheader.height); y++ )
+					for ( int x=0; x<RowSize*2; x++ )
+					{
+						const unsigned int vflip = (BMPiheader.height+~y);
+						const unsigned int Cursor = vflip*RowSize*2+x;
+						unsigned char pxlArrayIndex = *(BYTE*)(src+FullHeaderSize + 16*4 + Cursor/2 ); //two pixels in one pack
+	
+						if ( !(Cursor%2) ) // Extract pixels from the pack
+							pxlArrayIndex /= 0x10;
+						else
+							pxlArrayIndex &= 0xF;
+	
+						if (onlyAlpha)
+						{
+							CONST BYTE pixel = *(BYTE*)(src+FullHeaderSize + pxlArrayIndex*4+3);
+							col = pixel | (pixel<<8) | (pixel<<16);	
+						}
+						else
+						{
+							col = _byteswap_ulong(*(DWORD*)(src+FullHeaderSize + pxlArrayIndex*4)) >> 8;
+							alpha->SetPixel( x, y, *(BYTE*)(src+FullHeaderSize + pxlArrayIndex*4+3) );
+						}
+	
+						if ( x<BMPiheader.width )
+							TargetImg->SetPixelFast( x, y, col );
+					}
+			break;
+	
+			case 8: // 256 colors
+				if (BMPiheader.compression) break;
+	
+				for ( int y=0; y<BMPiheader.height; y++ )
+					for ( int x=0; x<RowSize; x++ )
+					{
+						const unsigned int vflip = (BMPiheader.height+~y);
+						const unsigned int Cursor = vflip*RowSize+x;
+						const unsigned char pxlArrayIndex = *(BYTE*)(src+FullHeaderSize + 256*4 + Cursor);
+		
+						if (onlyAlpha)
+						{
+							CONST BYTE pixel = *(BYTE*)(src+FullHeaderSize + pxlArrayIndex*4+3);
+							col = pixel | (pixel<<8) | (pixel<<16);	
+						}
+						else
+						{
+							col = _byteswap_ulong(*(DWORD*)(src+FullHeaderSize + pxlArrayIndex*4)) >> 8;
+							alpha->SetPixel( x, y, *(BYTE*)(src+FullHeaderSize + pxlArrayIndex*4+3) );
+						}
+	
+						if ( x<BMPiheader.width )
+							TargetImg->SetPixelFast( x, y, col );
+					}
+			break;
+	
+			case 16: // 16 bpp advanced stuff
+				for ( int y=0; y<BMPiheader.height; y++ )
+					for ( int x=0; x<BMPiheader.width; x++ )
+					{
+						const unsigned int vflip = (BMPiheader.height+~y);
+						const unsigned int Cursor = vflip*BMPiheader.width+x;
+						CONST SHORT pixel = *(SHORT*)(src+FullHeaderSize + Cursor*2);
+						SHORT r, g, b, a;
+	
+						if (!*bitMasks || bitMasks[1] == 0x03E0) // B5G5R5X1 or B5G5R5A1
+						{
+							if (!onlyAlpha)
+							{
+								r = (pixel & 0x7C00) >> 10;
+								r = (r << 3) | (r >> 2);
+								g = (pixel & 0x3E0) >> 5;
+								g = (g << 3) | (g >> 2);	
+								b = pixel & 0x1F;
+								b = (b << 3) | (b >> 2);
+							}
+							if (bitMasks[3]) // A1
+							{
+								a = pixel & 0x8000;
+								a = a >> 15;
+								if (!onlyAlpha)
+									alpha->SetPixel( x, y, a );
+								else
+									col = a | (a<<8) | (a<<16);
+							}
+						}
+						else
+							if (bitMasks[1] == 0x07E0) // B5G6R5
+							{								
+								r = (pixel & 0xF800) >> 11;
+								r = (r << 3) | (r >> 2);
+								g = (pixel & 0x07E0) >> 5;
+								g = (g << 2) | (g >> 3);
+								b = pixel & 0x001F;	
+								b = (b << 3) | (b >> 2);
+							}
+	
+						if (!onlyAlpha)
+							col = r | (g<<8) | (b<<16);
+	
+						if (!onlyAlpha || bitMasks[3])
+							if ( x<BMPiheader.width )
+								TargetImg->SetPixelFast( x, y, col );
+					}
+			break;
+	
+			case 24: // 24 bpp
+				for ( int y=0; y<BMPiheader.height; y++ )
+					for ( int x=0; x<BMPiheader.width; x++ )
+					{
+						const unsigned int vflip = (BMPiheader.height+~y);
+						const unsigned int Cursor = vflip*BMPiheader.width+x;
+						const unsigned int Padding = vflip*(BMPiheader.width - (BMPiheader.width/4)*4);
+		
+						if (!onlyAlpha)
+						{
+							col = _byteswap_ulong(*(DWORD*)(src+FullHeaderSize + Cursor*3 + Padding)) >> 8;
+							if ( x<BMPiheader.width )
+								TargetImg->SetPixelFast( x, y, col );
+						}
+					}
+			break;
+	
+			case 32: // 32 bpp
+				for ( int y=0; y<BMPiheader.height; y++ )
+					for ( int x=0; x<BMPiheader.width; x++ )
+					{
+						const unsigned int vflip = (BMPiheader.height+~y);
+						const unsigned int Cursor = vflip*BMPiheader.width+x;
+						CONST BYTE pixel = *(BYTE*)(src+FullHeaderSize + Cursor*4+3);
+	
+						if (onlyAlpha)	
+							col = pixel | (pixel<<8) | (pixel<<16);	
+						else
+						{
+							col = _byteswap_ulong(*(DWORD*)(src+FullHeaderSize + Cursor*4-1));
+							alpha->SetPixel( x, y, pixel );
+						}
+						if ( x<BMPiheader.width )
+							TargetImg->SetPixelFast( x, y, col );
+					}
+		}
+	
+		TargetImg->ReleaseAlphaSurface(alpha);
+		if Current(rdPtr->targetId)
+			ImageChanged();
+	}
+	return 0;
+}
+
+
+
+
+
 // ============================================================================
 //
 // EXPRESSIONS
