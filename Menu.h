@@ -207,6 +207,9 @@
 		ITEM(163, "Quick restore")
 		ITEM(162, "Quick store")
 		SEPARATOR
+		ITEM(175, "Load raw data from memory location")
+		ITEM(176, "Load bitmap image from memory location")
+		SEPARATOR
 		SUB_START("Advanced")
 			ITEM(68,"Export as Overlay")
 			SEPARATOR
