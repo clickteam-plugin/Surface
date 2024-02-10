@@ -1,0 +1,4 @@
++ Start of frame
+	-Binary object: Load binary from file Apppath$ + "\16color_paletized.bmp" //example of loading 16 color bitmap with indexed color
+	-Surface: Load bitmap from addr("Binary Object") Only alpha channel 0
+	-Surface: Clear alpha with 255
