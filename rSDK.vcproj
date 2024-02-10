@@ -1266,7 +1266,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs2.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs2u.lib"
 				OutputFile="c:\mmf2\extensions\unicode\Surface.mfx"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -1365,7 +1365,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs2.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib mmfs2u.lib"
 				OutputFile="c:\mmf2\data\runtime\unicode\Surface.mfx"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
