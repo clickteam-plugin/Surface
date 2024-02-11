@@ -4876,14 +4876,14 @@ ACTION(
 }
 
 
-
 //___________________________________________________________________________________________________
 
 ACTION(
 	/* ID */			175,
-	/* Name */			_T("%o: Load raw data from %0  with alpha channel %1"),
+	/* Name */			_T("%o: Fill selected canvas with raw data from %0  choice: %1"),
 	/* Flags */			0,
-	/* Params */		(2,PARAM_NUMBER,_T("Source address"),PARAM_NUMBER,_T("Select (0 - 24bpp RGB, 1 - 32 bpp RGBA, 2 - 32 bpp alpha channel)"))
+	/* Params */		(2,PARAM_NUMBER,_T("Source address"),PARAM_NUMBER,_T("0: 24bpp RGB, 1: 32bpp RGB only, 2: 32bpp RGBA, 3: 32bpp Alpha channel only"))
+	//Only 24 and 32 bit supported right now
 ) {
 	DWORD src = GetInt();
 	char RGBA = GetInt();
@@ -4900,7 +4900,7 @@ ACTION(
 	for ( int y=0; y<height; y++ )
 		for ( int x=0; x<width; x++ )
 		{
-			memcpy( &pixel, (DWORD*)(src+(y*width+x)*(3+hasAlpha)), 3+hasAlpha );
+			memcpy( &pixel, (DWORD*)(src+(y*width+x)*(3+hasAlpha)), 3+hasAlpha ); //copy bitmap pixel to pixel container
 
 			switch (RGBA)
 			{
@@ -4910,10 +4910,15 @@ ACTION(
 				case 1:
 				{
 					TargetImg->SetPixel( x, y, pixel[0],pixel[1],pixel[2] );
-					alpha->SetPixel( x, y, pixel[3] );
 				}
 				break;
 				case 2:
+				{
+					TargetImg->SetPixel(x, y, pixel[0], pixel[1], pixel[2]);
+					alpha->SetPixel(x, y, pixel[3]);
+				}
+				break;
+				case 3:
 				{
 					TargetImg->SetPixel( x, y, pixel[3],pixel[3],pixel[3] );
 					alpha->SetPixel( x, y, 0xFF );
@@ -4922,9 +4927,10 @@ ACTION(
 			}
 		}
 
-	if (!RGBA)
+	if (RGBA != 2)
 		alpha->Fill(0xFF);
 	TargetImg->ReleaseAlphaSurface(alpha);
+	//if (RGBA != 2) ActionFunc6(rdPtr, 255, 0); //Create alpha channel
 	if Current(rdPtr->targetId)
 		ImageChanged();
 
@@ -4933,16 +4939,19 @@ ACTION(
 
 //___________________________________________________________________________________________________
 
+
+
 ACTION(
 	/* ID */			176,
-	/* Name */			_T("%o: Load bitmap from %0  Only alpha channel %1"),
+	/* Name */			_T("%o: Load bitmap from %0  choice: %1"),
 	/* Flags */			0,
-	/* Params */		(2,PARAM_NUMBER,_T("Source address"),PARAM_NUMBER,_T("0 - All channels, 1 - Only alpha channel"))
+	/* Params */		(2,PARAM_NUMBER,_T("Source address"),PARAM_NUMBER,_T("0: All channels, 1: RGB only, 2: Alpha channel only"))
+	//Yes, some bitmaps may include Alpha channel too. Some compressed textures from games choose one transparency color from palette as well as old cursors and icons.
 ) {	
 	DWORD src = GetInt();
 	unsigned char onlyAlpha = GetInt();
-	
-	if ( *(SHORT*)src = 0x4D42 ) // BITMAP
+
+	if ( *(SHORT*)src == 0x4D42 ) // BITMAP
 	{
 		// BMP header
 		#pragma pack(push, 1)
@@ -5052,7 +5061,7 @@ ACTION(
 						unsigned char pxlArrayIndex = *(BYTE*)(src+FullHeaderSize + 2*4 + Cursor/8); // Eight pixels in one pack
 						pxlArrayIndex = pxlArrayIndex >> (7-Cursor%8) & 1; // Extract pixels from the pack
 							
-						if (onlyAlpha)
+						if (onlyAlpha == 2)
 						{
 							CONST BYTE pixel = *(BYTE*)(src+FullHeaderSize + pxlArrayIndex*4+3);
 							col = pixel | (pixel<<8) | (pixel<<16);	
@@ -5083,7 +5092,7 @@ ACTION(
 						else
 							pxlArrayIndex &= 0xF;
 	
-						if (onlyAlpha)
+						if (onlyAlpha == 2)
 						{
 							CONST BYTE pixel = *(BYTE*)(src+FullHeaderSize + pxlArrayIndex*4+3);
 							col = pixel | (pixel<<8) | (pixel<<16);	
@@ -5109,7 +5118,7 @@ ACTION(
 						const unsigned int Cursor = vflip*RowSize+x;
 						const unsigned char pxlArrayIndex = *(BYTE*)(src+FullHeaderSize + 256*4 + Cursor);
 		
-						if (onlyAlpha)
+						if (onlyAlpha == 2)
 						{
 							CONST BYTE pixel = *(BYTE*)(src+FullHeaderSize + pxlArrayIndex*4+3);
 							col = pixel | (pixel<<8) | (pixel<<16);	
@@ -5136,7 +5145,7 @@ ACTION(
 	
 						if (!*bitMasks || bitMasks[1] == 0x03E0) // B5G5R5X1 or B5G5R5A1
 						{
-							if (!onlyAlpha)
+							if (onlyAlpha < 2)
 							{
 								r = (pixel & 0x7C00) >> 10;
 								r = (r << 3) | (r >> 2);
@@ -5166,10 +5175,10 @@ ACTION(
 								b = (b << 3) | (b >> 2);
 							}
 	
-						if (!onlyAlpha)
+						if (onlyAlpha < 2)
 							col = r | (g<<8) | (b<<16);
 	
-						if (!onlyAlpha || bitMasks[3])
+						if (onlyAlpha < 2 || bitMasks[3])
 							if ( x<BMPiheader.width )
 								TargetImg->SetPixelFast( x, y, col );
 					}
@@ -5183,7 +5192,7 @@ ACTION(
 						const unsigned int Cursor = vflip*BMPiheader.width+x;
 						const unsigned int Padding = vflip*(BMPiheader.width - (BMPiheader.width/4)*4);
 		
-						if (!onlyAlpha)
+						if (onlyAlpha < 2)
 						{
 							col = _byteswap_ulong(*(DWORD*)(src+FullHeaderSize + Cursor*3 + Padding)) >> 8;
 							if ( x<BMPiheader.width )
@@ -5200,7 +5209,7 @@ ACTION(
 						const unsigned int Cursor = vflip*BMPiheader.width+x;
 						CONST BYTE pixel = *(BYTE*)(src+FullHeaderSize + Cursor*4+3);
 	
-						if (onlyAlpha)	
+						if (onlyAlpha == 2)	
 							col = pixel | (pixel<<8) | (pixel<<16);	
 						else
 						{
@@ -5212,14 +5221,13 @@ ACTION(
 					}
 		}
 	
+		if (onlyAlpha >= 1) alpha->Fill(0xFF); //ActionFunc6(rdPtr, 255, 0); //Create alpha channel
 		TargetImg->ReleaseAlphaSurface(alpha);
 		if Current(rdPtr->targetId)
 			ImageChanged();
 	}
 	return 0;
 }
-
-
 
 
 
